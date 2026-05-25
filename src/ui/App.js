@@ -1,4 +1,18 @@
-import { createIcons, icons } from 'lucide';
+import {
+  BadgeAlert,
+  Cable,
+  Check,
+  Frown,
+  Meh,
+  Palette,
+  RotateCcw,
+  SkipForward,
+  Smile,
+  Undo2,
+  Volume2,
+  VolumeX,
+  createIcons,
+} from 'lucide';
 import { GameAudio } from '../audio/GameAudio.js';
 import { BLACK, WHITE } from '../games/reversi/ReversiGame.js';
 import { gameRegistry } from '../games/registry.js';
@@ -12,9 +26,27 @@ import { VirtualPadAdapter } from '../pad/VirtualPadAdapter.js';
 const DIFFICULTIES = ['easy', 'normal', 'hard'];
 const BOARD_SIZES = [2, 3, 4, 5, 6, 7, 8];
 const LONG_PRESS_MS = 500;
+const LUCIDE_ICONS = {
+  BadgeAlert,
+  Cable,
+  Check,
+  Frown,
+  Meh,
+  Palette,
+  RotateCcw,
+  SkipForward,
+  Smile,
+  Undo2,
+  Volume2,
+  VolumeX,
+};
 
 export function createApp(root) {
   return new PadGameApp(root).mount();
+}
+
+function renderIcons() {
+  createIcons({ icons: LUCIDE_ICONS });
 }
 
 class PadGameApp {
@@ -39,7 +71,7 @@ class PadGameApp {
 
   mount() {
     this.root.innerHTML = this.template();
-    createIcons({ icons });
+    renderIcons();
 
     this.cacheElements();
     this.renderGameList();
@@ -555,6 +587,14 @@ class PadGameApp {
       this.stepBoardSize(1);
     }
 
+    if (this.selectedGameId === 'blockline' && control === PAD_CONTROL.ARROW_LEFT) {
+      this.game?.moveSelected?.('left');
+    }
+
+    if (this.selectedGameId === 'blockline' && control === PAD_CONTROL.ARROW_RIGHT) {
+      this.game?.moveSelected?.('right');
+    }
+
     if (control === PAD_CONTROL.ARROW_UP) {
       this.stepDifficulty(1);
     }
@@ -645,7 +685,7 @@ class PadGameApp {
     this.connectButton.innerHTML = warning
       ? '<i data-lucide="badge-alert"></i><span>MIDI Connected</span>'
       : '<i data-lucide="check"></i><span>Connected</span>';
-    createIcons({ icons });
+    renderIcons();
   }
 
   setMuted(muted) {
@@ -654,7 +694,7 @@ class PadGameApp {
     this.muteButton.innerHTML = muted
       ? '<i data-lucide="volume-x"></i><span>Muted</span>'
       : '<i data-lucide="volume-2"></i><span>Sound</span>';
-    createIcons({ icons });
+    renderIcons();
   }
 
   syncGameState(state) {
@@ -701,6 +741,11 @@ class PadGameApp {
 
     if (state.kind === 'match3') {
       this.syncMatch3State(state);
+      return;
+    }
+
+    if (state.kind === 'blockline') {
+      this.syncBlockLineState(state);
       return;
     }
 
@@ -838,6 +883,20 @@ class PadGameApp {
     this.cpuLabel.textContent = 'Moves';
     this.cpuScore.textContent = `${state.movesUsed}/${state.moveLimit}`;
     this.messageLine.textContent = `Remaining ${state.targetRemaining} / Moves left ${state.movesRemaining} / Chain ${state.lastChainCount}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = !state.canUndo;
+  }
+
+  syncBlockLineState(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = 'Score';
+    this.humanScore.textContent = String(state.score);
+    this.cpuLabel.textContent = 'Lines';
+    this.cpuScore.textContent = String(state.linesCleared);
+    this.messageLine.textContent = state.selectedWidth === null
+      ? `Moves ${state.movesUsed} / Legal ${state.legalMoveCount} / Blocks ${state.blockCount}`
+      : `Selected width ${state.selectedWidth} / Legal ${state.legalMoveCount} / Chain ${state.lastChainCount}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
   }

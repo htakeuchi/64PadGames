@@ -1,4 +1,5 @@
 import { CheckersGame } from './checkers/CheckersGame.js';
+import { BlockLineGame } from './blockline/BlockLineGame.js';
 import { FloodItGame } from './floodit/FloodItGame.js';
 import { HasamiShogiGame } from './hasami/HasamiShogiGame.js';
 import { LightsOutGame } from './lightsout/LightsOutGame.js';
@@ -62,5 +63,11 @@ export const gameRegistry = [
     title: 'Match 3',
     summary: 'Swap adjacent panels, clear the target color, and beat the move limit.',
     create: (context) => new Match3Game(context),
+  },
+  {
+    id: 'blockline',
+    title: 'Block Line',
+    summary: 'Slide width 1-3 blocks, clear full lines, and survive the rising board.',
+    create: (context) => new BlockLineGame(context),
   },
 ];
