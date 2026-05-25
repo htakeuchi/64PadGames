@@ -20,6 +20,7 @@ export class LaunchpadProMk3Adapter {
     this.output = null;
     this.sysexEnabled = true;
     this.padDownListeners = new Set();
+    this.padUpListeners = new Set();
     this.controlListeners = new Set();
     this.handleMessage = this.handleMessage.bind(this);
   }
@@ -57,6 +58,11 @@ export class LaunchpadProMk3Adapter {
   onPadDown(listener) {
     this.padDownListeners.add(listener);
     return () => this.padDownListeners.delete(listener);
+  }
+
+  onPadUp(listener) {
+    this.padUpListeners.add(listener);
+    return () => this.padUpListeners.delete(listener);
   }
 
   onControl(listener) {
@@ -127,6 +133,7 @@ export class LaunchpadProMk3Adapter {
     const [status, data1, data2] = event.data;
     const command = status & 0xf0;
     const isNoteOn = command === 0x90 && data2 > 0;
+    const isNoteOff = command === 0x80 || (command === 0x90 && data2 === 0);
     const isControlChange = command === 0xb0 && data2 > 0;
     const cell = noteToCell(data1);
 
@@ -142,6 +149,10 @@ export class LaunchpadProMk3Adapter {
 
     if (isNoteOn && cell) {
       this.padDownListeners.forEach((listener) => listener(cell));
+    }
+
+    if (isNoteOff && cell) {
+      this.padUpListeners.forEach((listener) => listener(cell));
     }
   }
 }

@@ -4,6 +4,7 @@ export class PadHub {
   constructor(adapters = []) {
     this.adapters = [];
     this.padDownListeners = new Set();
+    this.padUpListeners = new Set();
     this.controlListeners = new Set();
 
     adapters.forEach((adapter) => this.addAdapter(adapter));
@@ -15,6 +16,14 @@ export class PadHub {
     if (typeof adapter.onPadDown === 'function') {
       adapter.onPadDown((cell) => {
         this.padDownListeners.forEach((listener) => {
+          listener({ ...cell, source: adapter.id });
+        });
+      });
+    }
+
+    if (typeof adapter.onPadUp === 'function') {
+      adapter.onPadUp((cell) => {
+        this.padUpListeners.forEach((listener) => {
           listener({ ...cell, source: adapter.id });
         });
       });
@@ -32,6 +41,11 @@ export class PadHub {
   onPadDown(listener) {
     this.padDownListeners.add(listener);
     return () => this.padDownListeners.delete(listener);
+  }
+
+  onPadUp(listener) {
+    this.padUpListeners.add(listener);
+    return () => this.padUpListeners.delete(listener);
   }
 
   onControl(listener) {

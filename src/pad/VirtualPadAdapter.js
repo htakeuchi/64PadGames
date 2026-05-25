@@ -5,6 +5,7 @@ export class VirtualPadAdapter {
     this.id = 'virtual-pad';
     this.root = root;
     this.padDownListeners = new Set();
+    this.padUpListeners = new Set();
     this.buttons = [];
 
     this.mount();
@@ -28,7 +29,18 @@ export class VirtualPadAdapter {
 
         button.addEventListener('pointerdown', (event) => {
           event.preventDefault();
+          button.setPointerCapture?.(event.pointerId);
           this.padDownListeners.forEach((listener) => listener({ x, y }));
+        });
+
+        button.addEventListener('pointerup', (event) => {
+          event.preventDefault();
+          this.padUpListeners.forEach((listener) => listener({ x, y }));
+        });
+
+        button.addEventListener('pointercancel', (event) => {
+          event.preventDefault();
+          this.padUpListeners.forEach((listener) => listener({ x, y }));
         });
 
         this.root.append(button);
@@ -42,6 +54,11 @@ export class VirtualPadAdapter {
   onPadDown(listener) {
     this.padDownListeners.add(listener);
     return () => this.padDownListeners.delete(listener);
+  }
+
+  onPadUp(listener) {
+    this.padUpListeners.add(listener);
+    return () => this.padUpListeners.delete(listener);
   }
 
   setCell(x, y, light) {

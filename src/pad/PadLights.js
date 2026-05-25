@@ -37,11 +37,23 @@ export const PAD_LIGHT = {
     css: '#ffd84d',
     label: 'Last',
   },
+  flag: {
+    id: 'flag',
+    midi: 13,
+    css: '#ffd84d',
+    label: 'Flag',
+  },
   warning: {
     id: 'warning',
     midi: 5,
     css: '#ff4f4f',
     label: 'Warning',
+  },
+  mine: {
+    id: 'mine',
+    midi: 5,
+    css: '#ff4f4f',
+    label: 'Mine',
   },
   dim: {
     id: 'dim',

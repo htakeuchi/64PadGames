@@ -9,6 +9,7 @@ import { PadHub } from '../pad/PadHub.js';
 import { VirtualPadAdapter } from '../pad/VirtualPadAdapter.js';
 
 const DIFFICULTIES = ['easy', 'normal', 'hard'];
+const LONG_PRESS_MS = 500;
 
 export function createApp(root) {
   return new PadGameApp(root).mount();
@@ -27,6 +28,7 @@ class PadGameApp {
     this.humanPlayer = BLACK;
     this.difficulty = 'normal';
     this.muted = false;
+    this.padPresses = new Map();
   }
 
   mount() {
@@ -40,7 +42,10 @@ class PadGameApp {
     this.animations = new PadAnimationPlayer(this.padHub);
     this.padHub.onPadDown((cell) => {
       this.audio.resume();
-      this.game?.handlePadDown(cell);
+      this.handlePadDown(cell);
+    });
+    this.padHub.onPadUp((cell) => {
+      this.handlePadUp(cell);
     });
     this.padHub.onControl((event) => {
       this.audio.resume();
@@ -93,7 +98,7 @@ class PadGameApp {
           </section>
 
           <aside class="control-panel" aria-label="Game controls">
-            <section class="control-section">
+            <section class="control-section" data-reversi-controls>
               <h2>Player</h2>
               <div class="segmented" data-control="player">
                 <button class="is-active" type="button" data-human-player="black">First</button>
@@ -102,7 +107,7 @@ class PadGameApp {
             </section>
 
             <section class="control-section">
-              <h2>CPU</h2>
+              <h2>Level</h2>
               <label class="field">
                 <span>Difficulty</span>
                 <select data-control="difficulty">
@@ -179,11 +184,13 @@ class PadGameApp {
     this.humanScore = this.root.querySelector('[data-human-score]');
     this.cpuScore = this.root.querySelector('[data-cpu-score]');
     this.humanLabel = this.root.querySelector('[data-human-label]');
+    this.cpuLabel = this.cpuScore.previousElementSibling;
     this.messageLine = this.root.querySelector('[data-message-line]');
     this.passButton = this.root.querySelector('[data-action="pass"]');
     this.undoButton = this.root.querySelector('[data-action="undo"]');
     this.muteButton = this.root.querySelector('[data-action="mute"]');
     this.difficultySelect = this.root.querySelector('[data-control="difficulty"]');
+    this.reversiControls = this.root.querySelector('[data-reversi-controls]');
   }
 
   renderGameList() {
@@ -264,6 +271,42 @@ class PadGameApp {
     }
   }
 
+  handlePadDown(cell) {
+    const key = padKey(cell);
+    const press = {
+      cell,
+      held: false,
+      timer: window.setTimeout(() => {
+        press.held = true;
+        this.game?.handlePadHold?.(cell);
+      }, LONG_PRESS_MS),
+    };
+
+    this.padPresses.set(key, press);
+  }
+
+  handlePadUp(cell) {
+    const key = padKey(cell);
+    const press = this.padPresses.get(key);
+
+    if (!press) {
+      return;
+    }
+
+    window.clearTimeout(press.timer);
+    this.padPresses.delete(key);
+
+    if (press.held) {
+      return;
+    }
+
+    if (typeof this.game?.handlePadTap === 'function') {
+      this.game.handlePadTap(cell);
+    } else {
+      this.game?.handlePadDown?.(cell);
+    }
+  }
+
   async playDebugAnimation(result) {
     this.animations.cancel();
 
@@ -302,6 +345,7 @@ class PadGameApp {
       difficulty: this.difficulty,
       animations: this.animations,
     });
+    this.syncGameControls();
   }
 
   setHumanPlayer(player) {
@@ -323,11 +367,11 @@ class PadGameApp {
   }
 
   handlePadControl(control) {
-    if (control === PAD_CONTROL.ARROW_LEFT) {
+    if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_LEFT) {
       this.setHumanPlayer(BLACK);
     }
 
-    if (control === PAD_CONTROL.ARROW_RIGHT) {
+    if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_RIGHT) {
       this.setHumanPlayer(WHITE);
     }
 
@@ -412,6 +456,11 @@ class PadGameApp {
   }
 
   syncGameState(state) {
+    if (state.kind === 'minesweeper') {
+      this.syncMinesweeperState(state);
+      return;
+    }
+
     const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
     const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
@@ -424,9 +473,26 @@ class PadGameApp {
     this.humanScore.textContent = String(humanScore);
     this.cpuScore.textContent = String(cpuScore);
     this.humanLabel.textContent = `You (${humanColor})`;
+    this.cpuLabel.textContent = 'CPU';
     this.messageLine.textContent = `CPU (${cpuColor}) / Legal moves ${state.legalMoveCount}`;
     this.passButton.disabled = !state.canPass;
     this.undoButton.disabled = !state.canUndo;
+  }
+
+  syncMinesweeperState(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = 'Opened';
+    this.humanScore.textContent = String(state.openedCount);
+    this.cpuLabel.textContent = 'Flags';
+    this.cpuScore.textContent = String(state.flagCount);
+    this.messageLine.textContent = `Mines ${state.mineCount} / Hidden ${state.hiddenCount}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = true;
+  }
+
+  syncGameControls() {
+    this.reversiControls.hidden = this.selectedGameId !== 'reversi';
   }
 
   setDeviceStatus(message, connected = false, error = false) {
@@ -435,6 +501,10 @@ class PadGameApp {
       <span>${message}</span>
     `;
   }
+}
+
+function padKey({ x, y }) {
+  return `${x},${y}`;
 }
 
 function isPermissionError(error) {

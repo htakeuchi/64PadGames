@@ -29,6 +29,16 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Record Arm: undo.
 - Pass is automatic when the current player has no legal moves.
 
+## Minesweeper
+
+- Grid tap: open a tile, or blink the adjacent mine count on an open tile.
+- Grid hold: place or clear a yellow flag.
+- Opened tiles are dim. Hidden tiles are off. Mines are red after a blast.
+- The first tap is always safe.
+- Difficulty sets the mine count: Easy 8, Normal 10, Hard 14.
+- Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in Minesweeper.
+- Stepping on a mine plays an explosion animation, then any grid pad starts a new game.
+
 ## End Animations
 
 At game over, the final board remains visible briefly, then the Launchpad plays a result animation:

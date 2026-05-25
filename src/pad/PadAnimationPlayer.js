@@ -101,6 +101,38 @@ export class PadAnimationPlayer {
     return true;
   }
 
+  async playExplosion(origin) {
+    const runId = this.nextRun();
+    const centerX = origin?.x ?? 3.5;
+    const centerY = origin?.y ?? 3.5;
+
+    for (let radius = 0; radius <= 8; radius += 1) {
+      const frame = emptyFrame();
+
+      forEachCell((x, y) => {
+        const distance = Math.hypot(x - centerX, y - centerY);
+
+        if (Math.abs(distance - radius) < 0.9) {
+          frame[cellIndex(x, y)] = {
+            ...PAD_LIGHT.warning,
+            effect: LIGHT_EFFECT.FLASH,
+          };
+        } else if (distance < radius) {
+          frame[cellIndex(x, y)] = radius % 2 === 0 ? PAD_LIGHT.last : PAD_LIGHT.opponent;
+        }
+      });
+
+      if (!await this.showFrame(frame, 80, runId)) return false;
+    }
+
+    for (let flash = 0; flash < 3; flash += 1) {
+      if (!await this.showFrame(fillFrame(PAD_LIGHT.warning), 90, runId)) return false;
+      if (!await this.showFrame(fillFrame(PAD_LIGHT.last), 70, runId)) return false;
+    }
+
+    return true;
+  }
+
   nextRun() {
     this.runId += 1;
     return this.runId;
