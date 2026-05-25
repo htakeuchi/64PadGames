@@ -69,6 +69,30 @@ export class FloodItGame {
     }
   }
 
+  async playDebugAnimation(result) {
+    this.animationId += 1;
+    this.animations?.cancel();
+
+    if (result === 'win') {
+      this.audio.win();
+      await this.animations?.playFloodSweep(FLOOD_LIGHTS.slice(0, this.colorCount));
+      await this.animations?.playWin();
+    }
+
+    if (result === 'lose') {
+      this.audio.lose();
+      await this.animations?.playLose();
+    }
+
+    if (result === 'draw') {
+      this.audio.draw();
+      await this.animations?.playFloodSweep(FLOOD_LIGHTS.slice(0, this.colorCount));
+      await this.animations?.playDraw();
+    }
+
+    this.render();
+  }
+
   handlePadTap({ x, y }) {
     if (this.gameOver) {
       if (this.awaitingNewGame) {

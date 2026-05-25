@@ -289,12 +289,18 @@ class PadGameApp {
 
   handlePadDown(cell) {
     const key = padKey(cell);
+    const canHold = typeof this.game?.handlePadHold === 'function';
     const press = {
       cell,
+      canHold,
       held: false,
       timer: window.setTimeout(() => {
+        if (!canHold || typeof this.game?.handlePadHold !== 'function') {
+          return;
+        }
+
         press.held = true;
-        this.game?.handlePadHold?.(cell);
+        this.game.handlePadHold(cell);
       }, LONG_PRESS_MS),
     };
 
@@ -312,7 +318,7 @@ class PadGameApp {
     window.clearTimeout(press.timer);
     this.padPresses.delete(key);
 
-    if (press.held) {
+    if (press.held && press.canHold) {
       return;
     }
 
@@ -324,17 +330,25 @@ class PadGameApp {
   }
 
   async playDebugAnimation(result) {
+    if (typeof this.game?.playDebugAnimation === 'function') {
+      await this.game.playDebugAnimation(result);
+      return;
+    }
+
     this.animations.cancel();
 
     if (result === 'win') {
+      this.audio.win();
       await this.animations.playWin();
     }
 
     if (result === 'lose') {
+      this.audio.lose();
       await this.animations.playLose();
     }
 
     if (result === 'draw') {
+      this.audio.draw();
       await this.animations.playDraw();
     }
 
@@ -420,7 +434,7 @@ class PadGameApp {
     }
 
     if (control === PAD_CONTROL.RECORD_ARM) {
-      if (this.selectedGameId === 'floodit') {
+      if (this.selectedGameId === 'floodit' || this.selectedGameId === 'simon') {
         this.game?.restart();
       } else {
         this.game?.undo?.();
@@ -506,6 +520,11 @@ class PadGameApp {
       return;
     }
 
+    if (state.kind === 'simon') {
+      this.syncSimonState(state);
+      return;
+    }
+
     const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
     const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
@@ -548,6 +567,20 @@ class PadGameApp {
     this.messageLine.textContent = state.moveLimitEnabled
       ? `Colors ${state.colorCount} / Remaining ${state.remainingMoves}`
       : `Colors ${state.colorCount} / Unlimited moves`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = true;
+  }
+
+  syncSimonState(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = 'Round';
+    this.humanScore.textContent = `${state.round}/${state.targetRounds}`;
+    this.cpuLabel.textContent = 'Lives';
+    this.cpuScore.textContent = String(state.livesRemaining);
+    this.messageLine.textContent = state.phase === 'input'
+      ? `Step ${state.inputIndex + 1}/${state.round} / Best ${state.bestRound}`
+      : `Target ${state.targetRounds} / Best ${state.bestRound}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = true;
   }

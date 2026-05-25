@@ -147,6 +147,28 @@ export class ReversiGame {
     this.resolveTurn();
   }
 
+  async playDebugAnimation(result) {
+    this.endSequenceId += 1;
+    this.animations?.cancel();
+
+    if (result === 'win') {
+      this.audio.win();
+      await this.animations?.playWin();
+    }
+
+    if (result === 'lose') {
+      this.audio.lose();
+      await this.animations?.playLose();
+    }
+
+    if (result === 'draw') {
+      this.audio.draw();
+      await this.animations?.playDraw();
+    }
+
+    this.render();
+  }
+
   getState() {
     const score = countPieces(this.board);
     const legalMoves = getLegalMoves(this.board, this.currentPlayer);

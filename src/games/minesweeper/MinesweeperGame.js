@@ -146,6 +146,28 @@ export class MinesweeperGame {
     this.notify();
   }
 
+  async playDebugAnimation(result) {
+    this.blinkId += 1;
+    this.animations?.cancel();
+
+    if (result === 'win') {
+      this.audio.win();
+      await this.animations?.playWin();
+    }
+
+    if (result === 'lose') {
+      this.audio.lose();
+      await this.animations?.playExplosion({ x: 3.5, y: 3.5 });
+    }
+
+    if (result === 'draw') {
+      this.audio.draw();
+      await this.animations?.playDraw();
+    }
+
+    this.render();
+  }
+
   getState() {
     const openedCount = countOpenedSafeCells(this.cells);
     const flagCount = countFlags(this.cells);

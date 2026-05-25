@@ -49,6 +49,18 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Cursor Up / Down changes difficulty. Cursor Left / Right switches Move Limit.
 - Record Arm starts a new Flood-It board.
 
+## Simon
+
+- The 8x8 grid is split into four 4x4 blocks.
+- Watch the light and synth-chord pattern, then repeat it by tapping the same blocks in order.
+- The four block sounds use the chord sequence F, G, Em, Am.
+- Tap any pad to start after selecting Simon.
+- Player input uses the same light and sound length as the playback pattern.
+- Clear the game by completing the target: Easy 10 rounds, Normal 15, Hard 25.
+- Difficulty changes target rounds, playback speed, input timeout, and lives.
+- Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in Simon.
+- Record Arm resets Simon to the waiting state.
+
 ## End Animations
 
 At game over, the final board remains visible briefly, then the Launchpad plays a result animation:
@@ -76,5 +88,6 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/games/reversi/` contains Reversi rules, CPU search, and game orchestration.
 - `src/games/minesweeper/` contains Minesweeper rules and pad feedback.
 - `src/games/floodit/` contains Flood-It rules and pad feedback.
+- `src/games/simon/` contains Simon rules and four-block pad feedback.
 
 The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.
