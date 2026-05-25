@@ -108,6 +108,22 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Cursor Up / Down changes difficulty.
 - Record Arm undoes one move.
 
+## Match 3
+
+- Grid tap: select a panel, then tap an orthogonal neighbor to swap.
+- Tapping the selected panel clears the selection. Tapping a non-neighbor changes the selection.
+- Matches are three or more same-color panels horizontally or vertically. Diagonal matches do not count.
+- Invalid swaps flash red, revert, and do not spend a move.
+- Matched panels flash white, disappear, fall downward, and refill from the top. Cascades resolve automatically.
+- The game starts by blinking the random target color and target count as pad digits.
+- Clear the stage by removing the target count before moves run out.
+- Difficulty sets target and moves: Easy 18 target / 28 moves, Normal 24 / 24, Hard 32 / 22.
+- If the move limit reaches zero or no valid swaps remain, the game ends.
+- The palette uses five high-contrast colors tuned for Pad visibility: sky, amber, green, white, and violet.
+- Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in Match 3.
+- Record Arm undoes one valid move.
+- Play starts a new Match 3 board.
+
 ## Debug Colors
 
 - Colors shows the selected game's palette on the top row.
@@ -146,5 +162,6 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/games/checkers/` contains Checkers rules, CPU search, and pad feedback.
 - `src/games/hasami/` contains Hasami Shogi rules, CPU search, and pad feedback.
 - `src/games/lightsout/` contains Lights Out puzzle generation and pad feedback.
+- `src/games/match3/` contains Match 3 rules and pad feedback.
 
 The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.

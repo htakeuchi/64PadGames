@@ -207,5 +207,6 @@ function ccToControl(cc) {
   if (cc === 80) return PAD_CONTROL.ARROW_UP;
   if (cc === 70) return PAD_CONTROL.ARROW_DOWN;
   if (cc === 1) return PAD_CONTROL.RECORD_ARM;
+  if (cc === 20) return PAD_CONTROL.PLAY;
   return null;
 }

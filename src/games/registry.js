@@ -2,6 +2,7 @@ import { CheckersGame } from './checkers/CheckersGame.js';
 import { FloodItGame } from './floodit/FloodItGame.js';
 import { HasamiShogiGame } from './hasami/HasamiShogiGame.js';
 import { LightsOutGame } from './lightsout/LightsOutGame.js';
+import { Match3Game } from './match3/Match3Game.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
 import { SameGame } from './samegame/SameGame.js';
@@ -55,5 +56,11 @@ export const gameRegistry = [
     title: 'Lights Out',
     summary: 'Turn off every light on board sizes from 2x2 through 8x8.',
     create: (context) => new LightsOutGame(context),
+  },
+  {
+    id: 'match3',
+    title: 'Match 3',
+    summary: 'Swap adjacent panels, clear the target color, and beat the move limit.',
+    create: (context) => new Match3Game(context),
   },
 ];

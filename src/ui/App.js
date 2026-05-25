@@ -563,6 +563,10 @@ class PadGameApp {
       this.stepDifficulty(-1);
     }
 
+    if (control === PAD_CONTROL.PLAY) {
+      this.game?.restart();
+    }
+
     if (control === PAD_CONTROL.RECORD_ARM) {
       if (
         this.selectedGameId === 'floodit'
@@ -695,6 +699,11 @@ class PadGameApp {
       return;
     }
 
+    if (state.kind === 'match3') {
+      this.syncMatch3State(state);
+      return;
+    }
+
     const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
     const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
@@ -817,6 +826,18 @@ class PadGameApp {
     this.messageLine.textContent = state.bestMoves === null
       ? `Lights ${state.lightsOnCount} / Best - / Difficulty ${formatDifficulty(state.difficulty)}`
       : `Lights ${state.lightsOnCount} / Best ${state.bestMoves} / Difficulty ${formatDifficulty(state.difficulty)}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = !state.canUndo;
+  }
+
+  syncMatch3State(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = `Target ${state.targetLabel}`;
+    this.humanScore.textContent = `${state.targetCleared}/${state.targetQuota}`;
+    this.cpuLabel.textContent = 'Moves';
+    this.cpuScore.textContent = `${state.movesUsed}/${state.moveLimit}`;
+    this.messageLine.textContent = `Remaining ${state.targetRemaining} / Moves left ${state.movesRemaining} / Chain ${state.lastChainCount}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
   }

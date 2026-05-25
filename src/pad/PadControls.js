@@ -4,5 +4,5 @@ export const PAD_CONTROL = {
   ARROW_UP: 'arrow-up',
   ARROW_DOWN: 'arrow-down',
   RECORD_ARM: 'record-arm',
+  PLAY: 'play',
 };
-
