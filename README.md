@@ -148,6 +148,27 @@ npm run build
 
 The generated `dist/` directory is a static site and can be hosted on any HTTPS-capable static host.
 
+## Cloudflare Pages
+
+Cloudflare Pages direct upload is configured with `wrangler.jsonc`.
+
+```bash
+npm run deploy:pages
+```
+
+The deploy script runs `npm run build:pages`, which creates a production Vite build with JavaScript minification and sourcemaps disabled, then obfuscates the generated JavaScript files in `dist/`. The default Pages project name is `launchpad-gamepad`.
+
+For a local Pages preview:
+
+```bash
+npm run preview:pages
+```
+
+For Git-based Cloudflare Pages deployments, use these build settings:
+
+- Build command: `npm run build:pages`
+- Build output directory: `dist`
+
 ## Architecture
 
 - `src/pad/` contains the controller abstraction and concrete adapters.

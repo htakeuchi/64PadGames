@@ -12,18 +12,18 @@ import {
   Volume2,
   VolumeX,
   createIcons,
-} from 'lucide';
-import { GameAudio } from '../audio/GameAudio.js';
-import { BLACK, WHITE } from '../games/reversi/ReversiGame.js';
-import { gameRegistry } from '../games/registry.js';
-import { LaunchpadProMk3Adapter } from '../pad/LaunchpadProMk3Adapter.js';
-import { PadAnimationPlayer } from '../pad/PadAnimationPlayer.js';
-import { PAD_CONTROL } from '../pad/PadControls.js';
-import { PadHub } from '../pad/PadHub.js';
-import { emptyFrame } from '../pad/PadLights.js';
-import { VirtualPadAdapter } from '../pad/VirtualPadAdapter.js';
+} from "lucide";
+import { GameAudio } from "../audio/GameAudio.js";
+import { BLACK, WHITE } from "../games/reversi/ReversiGame.js";
+import { gameRegistry } from "../games/registry.js";
+import { LaunchpadProMk3Adapter } from "../pad/LaunchpadProMk3Adapter.js";
+import { PadAnimationPlayer } from "../pad/PadAnimationPlayer.js";
+import { PAD_CONTROL } from "../pad/PadControls.js";
+import { PadHub } from "../pad/PadHub.js";
+import { emptyFrame } from "../pad/PadLights.js";
+import { VirtualPadAdapter } from "../pad/VirtualPadAdapter.js";
 
-const DIFFICULTIES = ['easy', 'normal', 'hard'];
+const DIFFICULTIES = ["easy", "normal", "hard"];
 const BOARD_SIZES = [2, 3, 4, 5, 6, 7, 8];
 const LONG_PRESS_MS = 500;
 const LUCIDE_ICONS = {
@@ -60,7 +60,7 @@ class PadGameApp {
     this.game = null;
     this.selectedGameId = gameRegistry[0].id;
     this.humanPlayer = BLACK;
-    this.difficulty = 'normal';
+    this.difficulty = "normal";
     this.moveLimitEnabled = true;
     this.boardSize = 5;
     this.muted = false;
@@ -101,12 +101,12 @@ class PadGameApp {
       <div class="app-shell">
         <header class="topbar">
           <div class="brand">
-            <p class="brand__kicker">Launchpad Gamepad</p>
+            <p class="brand__kicker">Play Games with 64 Pad</p>
             <h1>64 Pad Games</h1>
           </div>
           <button class="button button--primary" type="button" data-action="connect">
             <i data-lucide="cable"></i>
-            <span>Connect Launchpad</span>
+            <span>Connect Launchpad Pro MK3</span>
           </button>
         </header>
 
@@ -180,9 +180,10 @@ class PadGameApp {
               <label class="field">
                 <span>Size</span>
                 <select data-control="board-size">
-                  ${BOARD_SIZES.map((size) => (
-                    `<option value="${size}" ${size === 5 ? 'selected' : ''}>${size}x${size}</option>`
-                  )).join('')}
+                  ${BOARD_SIZES.map(
+                    (size) =>
+                      `<option value="${size}" ${size === 5 ? "selected" : ""}>${size}x${size}</option>`,
+                  ).join("")}
                 </select>
               </label>
             </section>
@@ -242,51 +243,67 @@ class PadGameApp {
             <div class="message-line" data-message-line>Ready</div>
           </aside>
         </main>
+        <footer class="app-footer" aria-label="Hardware support">
+          <strong>Launchpad Pro MK3 hardware supported.</strong>
+          <span>Games are played on the physical Launchpad Pro MK3; the web pad mirrors the device. Currently supports Launchpad Pro MK3 only.</span>
+        </footer>
       </div>
     `;
   }
 
   cacheElements() {
-    this.gameList = this.root.querySelector('[data-game-list]');
-    this.padRoot = this.root.querySelector('[data-pad-root]');
-    this.deviceStatus = this.root.querySelector('[data-device-status]');
+    this.gameList = this.root.querySelector("[data-game-list]");
+    this.padRoot = this.root.querySelector("[data-pad-root]");
+    this.deviceStatus = this.root.querySelector("[data-device-status]");
     this.connectButton = this.root.querySelector('[data-action="connect"]');
-    this.turnLabel = this.root.querySelector('[data-turn-label]');
-    this.turnChip = this.root.querySelector('[data-turn-chip]');
-    this.currentGameLabel = this.root.querySelector('[data-current-game-label]');
-    this.gameInfoTitle = this.root.querySelector('[data-game-info-title]');
-    this.gameInfoSummary = this.root.querySelector('[data-game-info-summary]');
-    this.gameInfoRules = this.root.querySelector('[data-game-info-rules]');
-    this.humanScore = this.root.querySelector('[data-human-score]');
-    this.cpuScore = this.root.querySelector('[data-cpu-score]');
-    this.humanLabel = this.root.querySelector('[data-human-label]');
+    this.turnLabel = this.root.querySelector("[data-turn-label]");
+    this.turnChip = this.root.querySelector("[data-turn-chip]");
+    this.currentGameLabel = this.root.querySelector(
+      "[data-current-game-label]",
+    );
+    this.gameInfoTitle = this.root.querySelector("[data-game-info-title]");
+    this.gameInfoSummary = this.root.querySelector("[data-game-info-summary]");
+    this.gameInfoRules = this.root.querySelector("[data-game-info-rules]");
+    this.humanScore = this.root.querySelector("[data-human-score]");
+    this.cpuScore = this.root.querySelector("[data-cpu-score]");
+    this.humanLabel = this.root.querySelector("[data-human-label]");
     this.cpuLabel = this.cpuScore.previousElementSibling;
-    this.messageLine = this.root.querySelector('[data-message-line]');
+    this.messageLine = this.root.querySelector("[data-message-line]");
     this.passButton = this.root.querySelector('[data-action="pass"]');
     this.undoButton = this.root.querySelector('[data-action="undo"]');
     this.muteButton = this.root.querySelector('[data-action="mute"]');
-    this.difficultySelect = this.root.querySelector('[data-control="difficulty"]');
-    this.boardSizeSelect = this.root.querySelector('[data-control="board-size"]');
-    this.reversiControls = this.root.querySelector('[data-reversi-controls]');
-    this.floodItControls = this.root.querySelector('[data-floodit-controls]');
-    this.boardSizeControls = this.root.querySelector('[data-board-size-controls]');
+    this.difficultySelect = this.root.querySelector(
+      '[data-control="difficulty"]',
+    );
+    this.boardSizeSelect = this.root.querySelector(
+      '[data-control="board-size"]',
+    );
+    this.reversiControls = this.root.querySelector("[data-reversi-controls]");
+    this.floodItControls = this.root.querySelector("[data-floodit-controls]");
+    this.boardSizeControls = this.root.querySelector(
+      "[data-board-size-controls]",
+    );
   }
 
   renderGameList() {
-    this.gameList.innerHTML = gameRegistry.map((game) => `
-      <button class="game-item ${game.id === this.selectedGameId ? 'is-active' : ''}" type="button" data-game-id="${game.id}">
+    this.gameList.innerHTML = gameRegistry
+      .map(
+        (game) => `
+      <button class="game-item ${game.id === this.selectedGameId ? "is-active" : ""}" type="button" data-game-id="${game.id}">
         <span>${game.title}</span>
         <small>${game.summary}</small>
       </button>
-    `).join('');
+    `,
+      )
+      .join("");
   }
 
   bindEvents() {
-    this.root.addEventListener('click', (event) => {
-      const gameButton = event.target.closest('[data-game-id]');
-      const actionButton = event.target.closest('[data-action]');
-      const playerButton = event.target.closest('[data-human-player]');
-      const moveLimitButton = event.target.closest('[data-move-limit]');
+    this.root.addEventListener("click", (event) => {
+      const gameButton = event.target.closest("[data-game-id]");
+      const actionButton = event.target.closest("[data-action]");
+      const playerButton = event.target.closest("[data-human-player]");
+      const moveLimitButton = event.target.closest("[data-move-limit]");
 
       if (gameButton) {
         this.selectGame(gameButton.dataset.gameId);
@@ -294,12 +311,14 @@ class PadGameApp {
       }
 
       if (playerButton) {
-        this.setHumanPlayer(playerButton.dataset.humanPlayer === 'black' ? BLACK : WHITE);
+        this.setHumanPlayer(
+          playerButton.dataset.humanPlayer === "black" ? BLACK : WHITE,
+        );
         return;
       }
 
       if (moveLimitButton) {
-        this.setMoveLimitEnabled(moveLimitButton.dataset.moveLimit === 'on');
+        this.setMoveLimitEnabled(moveLimitButton.dataset.moveLimit === "on");
         return;
       }
 
@@ -311,7 +330,7 @@ class PadGameApp {
       this.handleAction(actionButton.dataset.action);
     });
 
-    this.root.addEventListener('change', (event) => {
+    this.root.addEventListener("change", (event) => {
       if (event.target.matches('[data-control="difficulty"]')) {
         this.setDifficulty(event.target.value);
       }
@@ -321,48 +340,48 @@ class PadGameApp {
       }
     });
 
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener("beforeunload", () => {
       this.padHub?.disconnect();
     });
   }
 
   handleAction(action) {
-    if (action === 'connect') {
+    if (action === "connect") {
       this.connectLaunchpad();
     }
 
-    if (action === 'new-game') {
+    if (action === "new-game") {
       this.exitDebugColorMode();
       this.game?.restart();
     }
 
-    if (action === 'undo') {
+    if (action === "undo") {
       this.exitDebugColorMode();
       this.game?.undo?.();
     }
 
-    if (action === 'pass') {
+    if (action === "pass") {
       this.exitDebugColorMode();
       this.game?.pass?.();
     }
 
-    if (action === 'mute') {
+    if (action === "mute") {
       this.setMuted(!this.muted);
     }
 
-    if (action === 'debug-win') {
-      this.playDebugAnimation('win');
+    if (action === "debug-win") {
+      this.playDebugAnimation("win");
     }
 
-    if (action === 'debug-lose') {
-      this.playDebugAnimation('lose');
+    if (action === "debug-lose") {
+      this.playDebugAnimation("lose");
     }
 
-    if (action === 'debug-draw') {
-      this.playDebugAnimation('draw');
+    if (action === "debug-draw") {
+      this.playDebugAnimation("draw");
     }
 
-    if (action === 'debug-colors') {
+    if (action === "debug-colors") {
       this.playDebugColors();
     }
   }
@@ -379,13 +398,13 @@ class PadGameApp {
       return;
     }
 
-    const canHold = typeof this.game?.handlePadHold === 'function';
+    const canHold = typeof this.game?.handlePadHold === "function";
     const press = {
       cell,
       canHold,
       held: false,
       timer: window.setTimeout(() => {
-        if (!canHold || typeof this.game?.handlePadHold !== 'function') {
+        if (!canHold || typeof this.game?.handlePadHold !== "function") {
           return;
         }
 
@@ -419,7 +438,7 @@ class PadGameApp {
       return;
     }
 
-    if (typeof this.game?.handlePadTap === 'function') {
+    if (typeof this.game?.handlePadTap === "function") {
       this.game.handlePadTap(cell);
     } else {
       this.game?.handlePadDown?.(cell);
@@ -427,24 +446,24 @@ class PadGameApp {
   }
 
   async playDebugAnimation(result) {
-    if (typeof this.game?.playDebugAnimation === 'function') {
+    if (typeof this.game?.playDebugAnimation === "function") {
       await this.game.playDebugAnimation(result);
       return;
     }
 
     this.animations.cancel();
 
-    if (result === 'win') {
+    if (result === "win") {
       this.audio.win();
       await this.animations.playWin();
     }
 
-    if (result === 'lose') {
+    if (result === "lose") {
       this.audio.lose();
       await this.animations.playLose();
     }
 
-    if (result === 'draw') {
+    if (result === "draw") {
       this.audio.draw();
       await this.animations.playDraw();
     }
@@ -453,9 +472,10 @@ class PadGameApp {
   }
 
   async playDebugColors() {
-    const colors = typeof this.game?.getDebugColors === 'function'
-      ? this.game.getDebugColors()
-      : [];
+    const colors =
+      typeof this.game?.getDebugColors === "function"
+        ? this.game.getDebugColors()
+        : [];
 
     this.debugColorMode = {
       colors,
@@ -463,9 +483,10 @@ class PadGameApp {
     this.animations.cancel();
     this.audio.pass();
     this.renderDebugColorFrame();
-    this.turnLabel.textContent = 'Color list';
-    this.turnChip.textContent = 'Debug';
-    this.messageLine.textContent = 'Tap a color pad to show its label. Tap any empty pad to return.';
+    this.turnLabel.textContent = "Color list";
+    this.turnChip.textContent = "Debug";
+    this.messageLine.textContent =
+      "Tap a color pad to show its label. Tap any empty pad to return.";
   }
 
   handleDebugColorPad({ x, y }) {
@@ -477,8 +498,8 @@ class PadGameApp {
     }
 
     this.turnLabel.textContent = formatDebugColor(color);
-    this.turnChip.textContent = 'Color';
-    this.messageLine.textContent = `Label ${color.label ?? color.id ?? 'Color'} / MIDI ${color.midi ?? '-'}`;
+    this.turnChip.textContent = "Color";
+    this.messageLine.textContent = `Label ${color.label ?? color.id ?? "Color"} / MIDI ${color.midi ?? "-"}`;
     this.renderDebugColorFrame();
   }
 
@@ -539,7 +560,7 @@ class PadGameApp {
     this.gameInfoSummary.textContent = gameDefinition.summary;
     this.gameInfoRules.replaceChildren(
       ...(gameDefinition.rules ?? []).map((rule) => {
-        const item = document.createElement('li');
+        const item = document.createElement("li");
 
         item.textContent = rule;
         return item;
@@ -549,11 +570,11 @@ class PadGameApp {
 
   setHumanPlayer(player) {
     this.humanPlayer = player;
-    this.root.querySelectorAll('[data-human-player]').forEach((button) => {
+    this.root.querySelectorAll("[data-human-player]").forEach((button) => {
       button.classList.toggle(
-        'is-active',
-        (button.dataset.humanPlayer === 'black' && player === BLACK)
-          || (button.dataset.humanPlayer === 'white' && player === WHITE),
+        "is-active",
+        (button.dataset.humanPlayer === "black" && player === BLACK) ||
+          (button.dataset.humanPlayer === "white" && player === WHITE),
       );
     });
     this.game?.setHumanPlayer(player);
@@ -569,10 +590,10 @@ class PadGameApp {
   setMoveLimitEnabled(enabled) {
     this.exitDebugColorMode();
     this.moveLimitEnabled = enabled;
-    this.root.querySelectorAll('[data-move-limit]').forEach((button) => {
+    this.root.querySelectorAll("[data-move-limit]").forEach((button) => {
       button.classList.toggle(
-        'is-active',
-        (button.dataset.moveLimit === 'on') === enabled,
+        "is-active",
+        (button.dataset.moveLimit === "on") === enabled,
       );
     });
     this.game?.setMoveLimitEnabled?.(enabled);
@@ -591,36 +612,60 @@ class PadGameApp {
       return;
     }
 
-    if (hasPlayerChoice(this.selectedGameId) && control === PAD_CONTROL.ARROW_LEFT) {
+    if (
+      hasPlayerChoice(this.selectedGameId) &&
+      control === PAD_CONTROL.ARROW_LEFT
+    ) {
       this.setHumanPlayer(BLACK);
     }
 
-    if (hasPlayerChoice(this.selectedGameId) && control === PAD_CONTROL.ARROW_RIGHT) {
+    if (
+      hasPlayerChoice(this.selectedGameId) &&
+      control === PAD_CONTROL.ARROW_RIGHT
+    ) {
       this.setHumanPlayer(WHITE);
     }
 
-    if (this.selectedGameId === 'floodit' && control === PAD_CONTROL.ARROW_LEFT) {
+    if (
+      this.selectedGameId === "floodit" &&
+      control === PAD_CONTROL.ARROW_LEFT
+    ) {
       this.setMoveLimitEnabled(true);
     }
 
-    if (this.selectedGameId === 'floodit' && control === PAD_CONTROL.ARROW_RIGHT) {
+    if (
+      this.selectedGameId === "floodit" &&
+      control === PAD_CONTROL.ARROW_RIGHT
+    ) {
       this.setMoveLimitEnabled(false);
     }
 
-    if (this.selectedGameId === 'lightsout' && control === PAD_CONTROL.ARROW_LEFT) {
+    if (
+      this.selectedGameId === "lightsout" &&
+      control === PAD_CONTROL.ARROW_LEFT
+    ) {
       this.stepBoardSize(-1);
     }
 
-    if (this.selectedGameId === 'lightsout' && control === PAD_CONTROL.ARROW_RIGHT) {
+    if (
+      this.selectedGameId === "lightsout" &&
+      control === PAD_CONTROL.ARROW_RIGHT
+    ) {
       this.stepBoardSize(1);
     }
 
-    if (this.selectedGameId === 'blockline' && control === PAD_CONTROL.ARROW_LEFT) {
-      this.game?.moveSelected?.('left');
+    if (
+      this.selectedGameId === "blockline" &&
+      control === PAD_CONTROL.ARROW_LEFT
+    ) {
+      this.game?.moveSelected?.("left");
     }
 
-    if (this.selectedGameId === 'blockline' && control === PAD_CONTROL.ARROW_RIGHT) {
-      this.game?.moveSelected?.('right');
+    if (
+      this.selectedGameId === "blockline" &&
+      control === PAD_CONTROL.ARROW_RIGHT
+    ) {
+      this.game?.moveSelected?.("right");
     }
 
     if (control === PAD_CONTROL.ARROW_UP) {
@@ -637,9 +682,9 @@ class PadGameApp {
 
     if (control === PAD_CONTROL.RECORD_ARM) {
       if (
-        this.selectedGameId === 'floodit'
-        || this.selectedGameId === 'simon'
-        || this.selectedGameId === 'samegame'
+        this.selectedGameId === "floodit" ||
+        this.selectedGameId === "simon" ||
+        this.selectedGameId === "samegame"
       ) {
         this.game?.restart();
       } else {
@@ -674,7 +719,7 @@ class PadGameApp {
     }
 
     this.connectButton.disabled = true;
-    this.setDeviceStatus('Connecting...', false);
+    this.setDeviceStatus("Connecting...", false);
 
     try {
       const { adapter, info, warning } = await this.connectLaunchpadAdapter();
@@ -700,7 +745,8 @@ class PadGameApp {
       return {
         adapter,
         info,
-        warning: 'Connected without SysEx. Switch Launchpad to Programmer Mode manually.',
+        warning:
+          "Connected without SysEx. Switch Launchpad to Programmer Mode manually.",
       };
     }
   }
@@ -732,64 +778,66 @@ class PadGameApp {
       return;
     }
 
-    if (state.kind === 'minesweeper') {
+    if (state.kind === "minesweeper") {
       this.syncMinesweeperState(state);
       return;
     }
 
-    if (state.kind === 'floodit') {
+    if (state.kind === "floodit") {
       this.syncFloodItState(state);
       return;
     }
 
-    if (state.kind === 'simon') {
+    if (state.kind === "simon") {
       this.syncSimonState(state);
       return;
     }
 
-    if (state.kind === 'samegame') {
+    if (state.kind === "samegame") {
       this.syncSameGameState(state);
       return;
     }
 
-    if (state.kind === 'checkers') {
+    if (state.kind === "checkers") {
       this.syncCheckersState(state);
       return;
     }
 
-    if (state.kind === 'hasami') {
+    if (state.kind === "hasami") {
       this.syncHasamiState(state);
       return;
     }
 
-    if (state.kind === 'lightsout') {
+    if (state.kind === "lightsout") {
       this.syncLightsOutState(state);
       return;
     }
 
-    if (state.kind === 'match3') {
+    if (state.kind === "match3") {
       this.syncMatch3State(state);
       return;
     }
 
-    if (state.kind === 'blockline') {
+    if (state.kind === "blockline") {
       this.syncBlockLineState(state);
       return;
     }
 
-    const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
-    const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
-    const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
-    const cpuSide = state.cpuPlayer === BLACK ? 'Black' : 'White';
+    const humanScore =
+      state.humanPlayer === BLACK ? state.score.black : state.score.white;
+    const cpuScore =
+      state.cpuPlayer === BLACK ? state.score.black : state.score.white;
+    const humanSide = state.humanPlayer === BLACK ? "Black" : "White";
+    const cpuSide = state.cpuPlayer === BLACK ? "Black" : "White";
 
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.gameOver
-      ? 'Game over'
-      : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
+      ? "Game over"
+      : `${state.currentPlayerName}${state.thinking ? " thinking" : ""}`;
     this.humanScore.textContent = String(humanScore);
     this.cpuScore.textContent = String(cpuScore);
-    this.humanLabel.textContent = 'You (Blue)';
-    this.cpuLabel.textContent = 'CPU (White)';
+    this.humanLabel.textContent = "You (Blue)";
+    this.cpuLabel.textContent = "CPU (White)";
     this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Legal moves ${state.legalMoveCount}`;
     this.passButton.disabled = !state.canPass;
     this.undoButton.disabled = !state.canUndo;
@@ -798,9 +846,9 @@ class PadGameApp {
   syncMinesweeperState(state) {
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.statusLabel;
-    this.humanLabel.textContent = 'Opened';
+    this.humanLabel.textContent = "Opened";
     this.humanScore.textContent = String(state.openedCount);
-    this.cpuLabel.textContent = 'Flags';
+    this.cpuLabel.textContent = "Flags";
     this.cpuScore.textContent = String(state.flagCount);
     this.messageLine.textContent = `Mines ${state.mineCount} / Hidden ${state.hiddenCount}`;
     this.passButton.disabled = true;
@@ -810,9 +858,9 @@ class PadGameApp {
   syncFloodItState(state) {
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.statusLabel;
-    this.humanLabel.textContent = 'Captured';
+    this.humanLabel.textContent = "Captured";
     this.humanScore.textContent = String(state.capturedCount);
-    this.cpuLabel.textContent = 'Moves';
+    this.cpuLabel.textContent = "Moves";
     this.cpuScore.textContent = state.moveLimitEnabled
       ? `${state.movesUsed}/${state.moveLimit}`
       : String(state.movesUsed);
@@ -826,13 +874,14 @@ class PadGameApp {
   syncSimonState(state) {
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.statusLabel;
-    this.humanLabel.textContent = 'Round';
+    this.humanLabel.textContent = "Round";
     this.humanScore.textContent = `${state.round}/${state.targetRounds}`;
-    this.cpuLabel.textContent = 'Lives';
+    this.cpuLabel.textContent = "Lives";
     this.cpuScore.textContent = String(state.livesRemaining);
-    this.messageLine.textContent = state.phase === 'input'
-      ? `Step ${state.inputIndex + 1}/${state.round} / Best ${state.bestRound}`
-      : `Target ${state.targetRounds} / Best ${state.bestRound}`;
+    this.messageLine.textContent =
+      state.phase === "input"
+        ? `Step ${state.inputIndex + 1}/${state.round} / Best ${state.bestRound}`
+        : `Target ${state.targetRounds} / Best ${state.bestRound}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = true;
   }
@@ -840,9 +889,9 @@ class PadGameApp {
   syncSameGameState(state) {
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.statusLabel;
-    this.humanLabel.textContent = 'Score';
+    this.humanLabel.textContent = "Score";
     this.humanScore.textContent = String(state.score);
-    this.cpuLabel.textContent = 'Blocks';
+    this.cpuLabel.textContent = "Blocks";
     this.cpuScore.textContent = String(state.blocksRemaining);
     this.messageLine.textContent = `Groups ${state.availableGroupCount} / Colors ${state.colorCount} / Best ${state.bestScore}`;
     this.passButton.disabled = true;
@@ -850,40 +899,50 @@ class PadGameApp {
   }
 
   syncCheckersState(state) {
-    const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
-    const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
-    const humanKings = state.humanPlayer === BLACK ? state.score.blackKings : state.score.whiteKings;
-    const cpuKings = state.cpuPlayer === BLACK ? state.score.blackKings : state.score.whiteKings;
-    const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
-    const cpuSide = state.cpuPlayer === BLACK ? 'Black' : 'White';
+    const humanScore =
+      state.humanPlayer === BLACK ? state.score.black : state.score.white;
+    const cpuScore =
+      state.cpuPlayer === BLACK ? state.score.black : state.score.white;
+    const humanKings =
+      state.humanPlayer === BLACK
+        ? state.score.blackKings
+        : state.score.whiteKings;
+    const cpuKings =
+      state.cpuPlayer === BLACK
+        ? state.score.blackKings
+        : state.score.whiteKings;
+    const humanSide = state.humanPlayer === BLACK ? "Black" : "White";
+    const cpuSide = state.cpuPlayer === BLACK ? "Black" : "White";
 
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.gameOver
-      ? 'Game over'
-      : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
+      ? "Game over"
+      : `${state.currentPlayerName}${state.thinking ? " thinking" : ""}`;
     this.humanScore.textContent = String(humanScore);
     this.cpuScore.textContent = String(cpuScore);
-    this.humanLabel.textContent = 'You (Blue)';
-    this.cpuLabel.textContent = 'CPU (Red)';
+    this.humanLabel.textContent = "You (Blue)";
+    this.cpuLabel.textContent = "CPU (Red)";
     this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Kings ${humanKings}-${cpuKings} / Legal moves ${state.legalMoveCount}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
   }
 
   syncHasamiState(state) {
-    const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
-    const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
-    const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
-    const cpuSide = state.cpuPlayer === BLACK ? 'Black' : 'White';
+    const humanScore =
+      state.humanPlayer === BLACK ? state.score.black : state.score.white;
+    const cpuScore =
+      state.cpuPlayer === BLACK ? state.score.black : state.score.white;
+    const humanSide = state.humanPlayer === BLACK ? "Black" : "White";
+    const cpuSide = state.cpuPlayer === BLACK ? "Black" : "White";
 
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.gameOver
-      ? 'Game over'
-      : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
+      ? "Game over"
+      : `${state.currentPlayerName}${state.thinking ? " thinking" : ""}`;
     this.humanScore.textContent = String(humanScore);
     this.cpuScore.textContent = String(cpuScore);
-    this.humanLabel.textContent = 'You (Blue)';
-    this.cpuLabel.textContent = 'CPU (Red)';
+    this.humanLabel.textContent = "You (Blue)";
+    this.cpuLabel.textContent = "CPU (Red)";
     this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Captured ${state.lastCaptureCount} / Legal moves ${state.legalMoveCount}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
@@ -892,13 +951,14 @@ class PadGameApp {
   syncLightsOutState(state) {
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.statusLabel;
-    this.humanLabel.textContent = 'Moves';
+    this.humanLabel.textContent = "Moves";
     this.humanScore.textContent = String(state.movesUsed);
-    this.cpuLabel.textContent = 'Par';
+    this.cpuLabel.textContent = "Par";
     this.cpuScore.textContent = String(state.parMoves);
-    this.messageLine.textContent = state.bestMoves === null
-      ? `Lights ${state.lightsOnCount} / Best - / Difficulty ${formatDifficulty(state.difficulty)}`
-      : `Lights ${state.lightsOnCount} / Best ${state.bestMoves} / Difficulty ${formatDifficulty(state.difficulty)}`;
+    this.messageLine.textContent =
+      state.bestMoves === null
+        ? `Lights ${state.lightsOnCount} / Best - / Difficulty ${formatDifficulty(state.difficulty)}`
+        : `Lights ${state.lightsOnCount} / Best ${state.bestMoves} / Difficulty ${formatDifficulty(state.difficulty)}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
   }
@@ -908,7 +968,7 @@ class PadGameApp {
     this.turnChip.textContent = state.statusLabel;
     this.humanLabel.textContent = `Target ${state.targetLabel}`;
     this.humanScore.textContent = `${state.targetCleared}/${state.targetQuota}`;
-    this.cpuLabel.textContent = 'Moves';
+    this.cpuLabel.textContent = "Moves";
     this.cpuScore.textContent = `${state.movesUsed}/${state.moveLimit}`;
     this.messageLine.textContent = `Remaining ${state.targetRemaining} / Moves left ${state.movesRemaining} / Chain ${state.lastChainCount}`;
     this.passButton.disabled = true;
@@ -918,26 +978,27 @@ class PadGameApp {
   syncBlockLineState(state) {
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.statusLabel;
-    this.humanLabel.textContent = 'Score';
+    this.humanLabel.textContent = "Score";
     this.humanScore.textContent = String(state.score);
-    this.cpuLabel.textContent = 'Lines';
+    this.cpuLabel.textContent = "Lines";
     this.cpuScore.textContent = String(state.linesCleared);
-    this.messageLine.textContent = state.selectedWidth === null
-      ? `Moves ${state.movesUsed} / Legal ${state.legalMoveCount} / Blocks ${state.blockCount}`
-      : `Selected width ${state.selectedWidth} / Legal ${state.legalMoveCount} / Chain ${state.lastChainCount}`;
+    this.messageLine.textContent =
+      state.selectedWidth === null
+        ? `Moves ${state.movesUsed} / Legal ${state.legalMoveCount} / Blocks ${state.blockCount}`
+        : `Selected width ${state.selectedWidth} / Legal ${state.legalMoveCount} / Chain ${state.lastChainCount}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
   }
 
   syncGameControls() {
     this.reversiControls.hidden = !hasPlayerChoice(this.selectedGameId);
-    this.floodItControls.hidden = this.selectedGameId !== 'floodit';
-    this.boardSizeControls.hidden = this.selectedGameId !== 'lightsout';
+    this.floodItControls.hidden = this.selectedGameId !== "floodit";
+    this.boardSizeControls.hidden = this.selectedGameId !== "lightsout";
   }
 
   setDeviceStatus(message, connected = false, error = false) {
     this.deviceStatus.innerHTML = `
-      <span class="status-dot ${connected ? 'is-connected' : ''} ${error ? 'is-error' : ''}"></span>
+      <span class="status-dot ${connected ? "is-connected" : ""} ${error ? "is-error" : ""}"></span>
       <span>${message}</span>
     `;
   }
@@ -948,7 +1009,7 @@ function padKey({ x, y }) {
 }
 
 function hasPlayerChoice(gameId) {
-  return gameId === 'reversi' || gameId === 'checkers' || gameId === 'hasami';
+  return gameId === "reversi" || gameId === "checkers" || gameId === "hasami";
 }
 
 function normalizeBoardSize(size) {
@@ -960,25 +1021,28 @@ function formatDifficulty(difficulty) {
 }
 
 function formatDebugColor(color) {
-  const label = color.label ?? color.id ?? 'Color';
-  const css = typeof color.css === 'string' ? color.css.toUpperCase() : 'NO CSS';
+  const label = color.label ?? color.id ?? "Color";
+  const css =
+    typeof color.css === "string" ? color.css.toUpperCase() : "NO CSS";
 
   return `${label} (${css})`;
 }
 
 function isPermissionError(error) {
-  const message = String(error?.message ?? '');
+  const message = String(error?.message ?? "");
 
-  return error?.name === 'NotAllowedError'
-    || message.includes('Permission')
-    || message.includes('permission')
-    || message.includes('not granted');
+  return (
+    error?.name === "NotAllowedError" ||
+    message.includes("Permission") ||
+    message.includes("permission") ||
+    message.includes("not granted")
+  );
 }
 
 function getMidiErrorMessage(error) {
   if (isPermissionError(error)) {
-    return 'Web MIDI permission was denied. Open this URL in Chrome or Edge and allow MIDI and SysEx access.';
+    return "Web MIDI permission was denied. Open this URL in Chrome or Edge and allow MIDI and SysEx access.";
   }
 
-  return error?.message ?? 'Could not connect to the MIDI device.';
+  return error?.message ?? "Could not connect to the MIDI device.";
 }

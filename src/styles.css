@@ -90,6 +90,23 @@ h2 {
   align-items: start;
 }
 
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.app-footer strong {
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
 .game-panel,
 .play-panel,
 .control-panel {
@@ -495,6 +512,12 @@ h2 {
   .play-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .app-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .button--primary,

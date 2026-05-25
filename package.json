@@ -6,12 +6,18 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "build:pages": "vite build --mode production && node scripts/obfuscate-dist.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "preview:pages": "npm run build:pages && wrangler pages dev dist",
+    "deploy:pages": "npm run build:pages && wrangler pages deploy dist --project-name launchpad-gamepad",
+    "deploy": "npm run deploy:pages"
   },
   "dependencies": {
     "lucide": "^1.16.0"
   },
   "devDependencies": {
-    "vite": "^8.0.14"
+    "javascript-obfuscator": "^5.4.3",
+    "vite": "^8.0.14",
+    "wrangler": "^4.94.0"
   }
 }
