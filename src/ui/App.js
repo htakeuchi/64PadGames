@@ -67,6 +67,7 @@ class PadGameApp {
     this.padPresses = new Map();
     this.currentGameState = null;
     this.debugColorMode = null;
+    this.debugMode = isDebugModeEnabled();
   }
 
   mount() {
@@ -218,7 +219,7 @@ class PadGameApp {
               </button>
             </section>
 
-            <section class="control-section debug-section">
+            <section class="control-section debug-section" data-debug-section ${this.debugMode ? "" : "hidden"}>
               <h2>Debug</h2>
               <div class="debug-grid">
                 <button class="button" type="button" data-action="debug-win">
@@ -346,6 +347,10 @@ class PadGameApp {
   }
 
   handleAction(action) {
+    if (action.startsWith("debug-") && !this.debugMode) {
+      return;
+    }
+
     if (action === "connect") {
       this.connectLaunchpad();
     }
@@ -1026,6 +1031,12 @@ function formatDebugColor(color) {
     typeof color.css === "string" ? color.css.toUpperCase() : "NO CSS";
 
   return `${label} (${css})`;
+}
+
+function isDebugModeEnabled() {
+  const value = new URLSearchParams(window.location.search).get("debug");
+
+  return value === "" || value === "1" || value === "true";
 }
 
 function isPermissionError(error) {
