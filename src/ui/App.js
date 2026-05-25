@@ -849,6 +849,11 @@ class PadGameApp {
       return;
     }
 
+    if (state.kind === "connect4") {
+      this.syncConnect4State(state);
+      return;
+    }
+
     if (state.kind === "checkers") {
       this.syncCheckersState(state);
       return;
@@ -941,6 +946,26 @@ class PadGameApp {
     this.cpuLabel.textContent = "Blocks";
     this.cpuScore.textContent = String(state.blocksRemaining);
     this.messageLine.textContent = `Groups ${state.availableGroupCount} / Colors ${state.colorCount} / Best ${state.bestScore}`;
+    this.syncActionAvailability(state);
+  }
+
+  syncConnect4State(state) {
+    const humanScore =
+      state.humanPlayer === BLACK ? state.score.black : state.score.white;
+    const cpuScore =
+      state.cpuPlayer === BLACK ? state.score.black : state.score.white;
+    const humanSide = state.humanPlayer === BLACK ? "First" : "Second";
+    const cpuSide = state.cpuPlayer === BLACK ? "First" : "Second";
+
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.gameOver
+      ? "Game over"
+      : `${state.currentPlayerName}${state.thinking ? " thinking" : ""}`;
+    this.humanScore.textContent = String(humanScore);
+    this.cpuScore.textContent = String(cpuScore);
+    this.humanLabel.textContent = "You (Blue)";
+    this.cpuLabel.textContent = "CPU (Red)";
+    this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Legal columns ${state.legalMoveCount}`;
     this.syncActionAvailability(state);
   }
 
@@ -1093,7 +1118,10 @@ function padKey({ x, y }) {
 }
 
 function hasPlayerChoice(gameId) {
-  return gameId === "reversi" || gameId === "checkers" || gameId === "hasami";
+  return gameId === "reversi"
+    || gameId === "connect4"
+    || gameId === "checkers"
+    || gameId === "hasami";
 }
 
 function getSecondaryOptionLabel(gameId) {

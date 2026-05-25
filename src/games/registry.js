@@ -1,5 +1,6 @@
 import { CheckersGame } from './checkers/CheckersGame.js';
 import { BlockLineGame } from './blockline/BlockLineGame.js';
+import { Connect4Game } from './connect4/Connect4Game.js';
 import { FloodItGame } from './floodit/FloodItGame.js';
 import { HasamiShogiGame } from './hasami/HasamiShogiGame.js';
 import { LightsOutGame } from './lightsout/LightsOutGame.js';
@@ -20,6 +21,17 @@ export const gameRegistry = [
       'The game ends when neither side can move; the higher disc count wins.',
     ],
     create: (context) => new ReversiGame(context),
+  },
+  {
+    id: 'connect4',
+    title: 'Connect 4',
+    summary: 'Drop discs by column and race the CPU to connect four.',
+    rules: [
+      'Tap any pad in one of the seven columns to drop your disc.',
+      'The disc falls to the lowest open space in that column.',
+      'Connect four horizontally, vertically, or diagonally before the CPU.',
+    ],
+    create: (context) => new Connect4Game(context),
   },
   {
     id: 'minesweeper',
