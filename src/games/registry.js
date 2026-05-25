@@ -1,3 +1,4 @@
+import { CheckersGame } from './checkers/CheckersGame.js';
 import { FloodItGame } from './floodit/FloodItGame.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
@@ -34,5 +35,11 @@ export const gameRegistry = [
     title: 'SameGame',
     summary: 'Remove connected color groups and collapse the board.',
     create: (context) => new SameGame(context),
+  },
+  {
+    id: 'checkers',
+    title: 'Checkers',
+    summary: 'Select pieces, make jumps, and play CPU checkers with kings.',
+    create: (context) => new CheckersGame(context),
   },
 ];

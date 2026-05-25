@@ -72,6 +72,17 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in SameGame.
 - Record Arm starts a new SameGame board.
 
+## Checkers
+
+- Grid tap: select one of your movable pieces, then tap a highlighted destination.
+- Captures are mandatory. If a jump can continue, the selected piece must keep jumping.
+- First plays black from the bottom side. Second plays white after the CPU opens.
+- Men move and jump forward. Kings move and jump in both diagonal directions.
+- Difficulty changes CPU search depth.
+- Cursor Left / Right switches between First and Second player.
+- Cursor Up / Down changes difficulty.
+- Record Arm undoes the previous player turn and CPU response.
+
 ## Debug Colors
 
 - Colors shows the selected game's palette on the top row.
@@ -107,5 +118,6 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/games/floodit/` contains Flood-It rules and pad feedback.
 - `src/games/simon/` contains Simon rules and four-block pad feedback.
 - `src/games/samegame/` contains SameGame rules and pad feedback.
+- `src/games/checkers/` contains Checkers rules, CPU search, and pad feedback.
 
 The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.

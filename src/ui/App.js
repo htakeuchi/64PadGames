@@ -451,6 +451,7 @@ class PadGameApp {
     this.currentGameState = null;
     this.renderGameList();
     this.currentGameLabel.textContent = gameDefinition.title;
+    this.game?.destroy?.();
     this.game = gameDefinition.create({
       pad: this.padHub,
       audio: this.audio,
@@ -502,11 +503,11 @@ class PadGameApp {
       return;
     }
 
-    if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_LEFT) {
+    if (hasPlayerChoice(this.selectedGameId) && control === PAD_CONTROL.ARROW_LEFT) {
       this.setHumanPlayer(BLACK);
     }
 
-    if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_RIGHT) {
+    if (hasPlayerChoice(this.selectedGameId) && control === PAD_CONTROL.ARROW_RIGHT) {
       this.setHumanPlayer(WHITE);
     }
 
@@ -633,6 +634,11 @@ class PadGameApp {
       return;
     }
 
+    if (state.kind === 'checkers') {
+      this.syncCheckersState(state);
+      return;
+    }
+
     const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
     const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
@@ -705,8 +711,29 @@ class PadGameApp {
     this.undoButton.disabled = true;
   }
 
+  syncCheckersState(state) {
+    const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
+    const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
+    const humanKings = state.humanPlayer === BLACK ? state.score.blackKings : state.score.whiteKings;
+    const cpuKings = state.cpuPlayer === BLACK ? state.score.blackKings : state.score.whiteKings;
+    const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
+    const cpuColor = state.cpuPlayer === BLACK ? 'Black' : 'White';
+
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.gameOver
+      ? 'Game over'
+      : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
+    this.humanScore.textContent = String(humanScore);
+    this.cpuScore.textContent = String(cpuScore);
+    this.humanLabel.textContent = `You (${humanColor})`;
+    this.cpuLabel.textContent = 'CPU';
+    this.messageLine.textContent = `CPU (${cpuColor}) / Kings ${humanKings}-${cpuKings} / Legal moves ${state.legalMoveCount}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = !state.canUndo;
+  }
+
   syncGameControls() {
-    this.reversiControls.hidden = this.selectedGameId !== 'reversi';
+    this.reversiControls.hidden = !hasPlayerChoice(this.selectedGameId);
     this.floodItControls.hidden = this.selectedGameId !== 'floodit';
   }
 
@@ -720,6 +747,10 @@ class PadGameApp {
 
 function padKey({ x, y }) {
   return `${x},${y}`;
+}
+
+function hasPlayerChoice(gameId) {
+  return gameId === 'reversi' || gameId === 'checkers';
 }
 
 function formatDebugColor(color) {
