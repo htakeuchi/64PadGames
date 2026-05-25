@@ -91,20 +91,21 @@ h2 {
 }
 
 .app-footer {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 16px;
-  padding: 0 2px;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(52, 57, 67, 0.72);
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   line-height: 1.45;
 }
 
 .app-footer strong {
-  color: var(--text);
-  font-size: 0.88rem;
+  color: var(--green);
+  font-size: 0.78rem;
+  text-transform: uppercase;
 }
 
 .game-panel,

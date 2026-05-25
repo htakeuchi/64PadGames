@@ -245,8 +245,8 @@ class PadGameApp {
           </aside>
         </main>
         <footer class="app-footer" aria-label="Hardware support">
-          <strong>Launchpad Pro MK3 hardware supported.</strong>
-          <span>Games are played on the physical Launchpad Pro MK3; the web pad mirrors the device. Currently supports Launchpad Pro MK3 only.</span>
+          <strong>Launchpad Pro MK3 only</strong>
+          <span>Play on the hardware; the browser pad mirrors it.</span>
         </footer>
       </div>
     `;
@@ -545,12 +545,22 @@ class PadGameApp {
     this.currentGameLabel.textContent = gameDefinition.title;
     this.updateGameInfo(gameDefinition);
     this.game?.destroy?.();
-    this.game = gameDefinition.create({
+    let nextGame = null;
+
+    nextGame = gameDefinition.create({
       pad: this.padHub,
       audio: this.audio,
-      onChange: (state) => this.syncGameState(state),
+      onChange: (state) => {
+        if (this.game !== nextGame) {
+          return;
+        }
+
+        this.syncGameState(state);
+      },
     });
-    this.game.start({
+
+    this.game = nextGame;
+    nextGame.start({
       humanPlayer: this.humanPlayer,
       difficulty: this.difficulty,
       moveLimitEnabled: this.moveLimitEnabled,

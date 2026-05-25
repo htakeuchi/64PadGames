@@ -33,9 +33,11 @@ export class SimonGame {
     this.activeBlock = null;
     this.playbackId = 0;
     this.inputTimer = null;
+    this.destroyed = false;
   }
 
   start(options = {}) {
+    this.destroyed = false;
     this.difficulty = options.difficulty ?? this.difficulty;
     this.animations = options.animations ?? this.animations;
     this.applyDifficulty();
@@ -43,6 +45,10 @@ export class SimonGame {
   }
 
   restart() {
+    if (this.destroyed) {
+      return;
+    }
+
     this.cancelTimers();
     this.animations?.cancel();
     this.sequence = [];
@@ -63,6 +69,13 @@ export class SimonGame {
     this.difficulty = difficulty;
     this.applyDifficulty();
     this.restart();
+  }
+
+  destroy() {
+    this.destroyed = true;
+    this.cancelTimers();
+    this.animations?.cancel();
+    this.onChange = null;
   }
 
   async playDebugAnimation(result) {
@@ -107,6 +120,10 @@ export class SimonGame {
   }
 
   handlePadTap({ x, y }) {
+    if (this.destroyed) {
+      return;
+    }
+
     if (this.gameOver) {
       if (this.awaitingNewGame) {
         this.restart();
@@ -153,6 +170,10 @@ export class SimonGame {
   }
 
   async handleCorrectInput(blockIndex) {
+    if (this.destroyed) {
+      return;
+    }
+
     const playbackId = this.playbackId;
     const inputMs = this.config.playbackMs;
 
@@ -166,7 +187,7 @@ export class SimonGame {
     this.notify();
     await sleep(inputMs);
 
-    if (this.playbackId !== playbackId || this.gameOver) {
+    if (this.destroyed || this.playbackId !== playbackId || this.gameOver) {
       return;
     }
 
@@ -199,7 +220,7 @@ export class SimonGame {
   }
 
   async handleMiss(reason, selectedBlock = null) {
-    if (this.phase !== 'input' || this.gameOver) {
+    if (this.destroyed || this.phase !== 'input' || this.gameOver) {
       return;
     }
 
@@ -217,9 +238,19 @@ export class SimonGame {
     this.renderMiss(selectedBlock ?? expectedBlock);
     this.notify();
     await sleep(MISS_FLASH_MS);
+
+    if (this.destroyed || this.gameOver) {
+      return;
+    }
+
     this.activeBlock = expectedBlock;
     this.render();
     await sleep(MISS_FLASH_MS);
+
+    if (this.destroyed || this.gameOver) {
+      return;
+    }
+
     this.activeBlock = null;
 
     if (this.livesRemaining <= 0) {
@@ -233,7 +264,7 @@ export class SimonGame {
   }
 
   beginGame() {
-    if (this.gameOver || this.phase !== 'ready') {
+    if (this.destroyed || this.gameOver || this.phase !== 'ready') {
       return;
     }
 
@@ -249,7 +280,7 @@ export class SimonGame {
     const playbackId = ++this.playbackId;
 
     globalThis.setTimeout(() => {
-      if (this.playbackId !== playbackId || this.gameOver) {
+      if (this.destroyed || this.playbackId !== playbackId || this.gameOver) {
         return;
       }
 
@@ -263,7 +294,7 @@ export class SimonGame {
     const playbackId = ++this.playbackId;
 
     globalThis.setTimeout(() => {
-      if (this.playbackId !== playbackId || this.gameOver) {
+      if (this.destroyed || this.playbackId !== playbackId || this.gameOver) {
         return;
       }
 
@@ -272,6 +303,10 @@ export class SimonGame {
   }
 
   async playSequence(playbackId) {
+    if (this.destroyed) {
+      return;
+    }
+
     this.clearInputTimer();
     this.phase = 'watch';
     this.statusLabel = 'Watch';
@@ -283,7 +318,7 @@ export class SimonGame {
     await sleep(this.config.gapMs);
 
     for (const blockIndex of this.sequence) {
-      if (this.playbackId !== playbackId || this.gameOver) {
+      if (this.destroyed || this.playbackId !== playbackId || this.gameOver) {
         return;
       }
 
@@ -292,7 +327,7 @@ export class SimonGame {
       this.render(true);
       await sleep(this.config.playbackMs);
 
-      if (this.playbackId !== playbackId || this.gameOver) {
+      if (this.destroyed || this.playbackId !== playbackId || this.gameOver) {
         return;
       }
 
@@ -301,7 +336,7 @@ export class SimonGame {
       await sleep(this.config.gapMs);
     }
 
-    if (this.playbackId !== playbackId || this.gameOver) {
+    if (this.destroyed || this.playbackId !== playbackId || this.gameOver) {
       return;
     }
 
@@ -314,7 +349,7 @@ export class SimonGame {
   }
 
   async finishWin() {
-    if (this.gameOver) {
+    if (this.destroyed || this.gameOver) {
       return;
     }
 
@@ -330,7 +365,16 @@ export class SimonGame {
     this.notify();
 
     await this.playClearSweep();
+
+    if (this.destroyed || !this.gameOver) {
+      return;
+    }
+
     await this.animations?.playWin();
+
+    if (this.destroyed || !this.gameOver) {
+      return;
+    }
 
     this.awaitingNewGame = true;
     this.message = 'Clear! Press any pad for a new game.';
@@ -339,7 +383,7 @@ export class SimonGame {
   }
 
   async finishLose(reason) {
-    if (this.gameOver) {
+    if (this.destroyed || this.gameOver) {
       return;
     }
 
@@ -356,6 +400,10 @@ export class SimonGame {
 
     await this.animations?.playLose();
 
+    if (this.destroyed || !this.gameOver) {
+      return;
+    }
+
     this.awaitingNewGame = true;
     this.message = `${reason} Press any pad for a new game.`;
     this.render();
@@ -363,11 +411,15 @@ export class SimonGame {
   }
 
   async playClearSweep() {
+    if (this.destroyed) {
+      return;
+    }
+
     const playbackId = ++this.playbackId;
 
     for (let cycle = 0; cycle < 2; cycle += 1) {
       for (let blockIndex = 0; blockIndex < SIMON_BLOCKS.length; blockIndex += 1) {
-        if (this.playbackId !== playbackId) {
+        if (this.destroyed || this.playbackId !== playbackId) {
           return;
         }
 
@@ -385,7 +437,9 @@ export class SimonGame {
   scheduleInputTimeout() {
     this.clearInputTimer();
     this.inputTimer = globalThis.setTimeout(() => {
-      this.handleMiss('Too slow.');
+      if (!this.destroyed) {
+        this.handleMiss('Too slow.');
+      }
     }, this.config.inputTimeoutMs);
   }
 
@@ -402,6 +456,10 @@ export class SimonGame {
   }
 
   render(activeOnly = false) {
+    if (this.destroyed) {
+      return;
+    }
+
     const frame = emptyFrame();
 
     SIMON_BLOCKS.forEach((block, blockIndex) => {
@@ -417,6 +475,10 @@ export class SimonGame {
   }
 
   renderMiss(blockIndex) {
+    if (this.destroyed) {
+      return;
+    }
+
     const frame = emptyFrame();
 
     SIMON_BLOCKS.forEach((block, candidateIndex) => {
@@ -433,6 +495,10 @@ export class SimonGame {
   }
 
   notify() {
+    if (this.destroyed) {
+      return;
+    }
+
     this.onChange?.(this.getState());
   }
 
