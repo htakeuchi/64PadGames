@@ -61,7 +61,7 @@ export const gameRegistry = [
     rules: [
       'Tap a group of two or more touching blocks with the same color to remove it.',
       'Blocks fall downward, then empty columns collapse inward.',
-      'Clear large groups for more points and finish with as few blocks as possible.',
+      'Every board has at least one full-clear route; clear large groups for more points.',
     ],
     create: (context) => new SameGame(context),
   },
