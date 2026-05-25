@@ -1,6 +1,7 @@
 import { CheckersGame } from './checkers/CheckersGame.js';
 import { FloodItGame } from './floodit/FloodItGame.js';
 import { HasamiShogiGame } from './hasami/HasamiShogiGame.js';
+import { LightsOutGame } from './lightsout/LightsOutGame.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
 import { SameGame } from './samegame/SameGame.js';
@@ -48,5 +49,11 @@ export const gameRegistry = [
     title: 'Hasami Shogi',
     summary: 'Slide pieces in straight lines and capture by sandwiching the CPU.',
     create: (context) => new HasamiShogiGame(context),
+  },
+  {
+    id: 'lightsout',
+    title: 'Lights Out',
+    summary: 'Turn off every light on board sizes from 2x2 through 8x8.',
+    create: (context) => new LightsOutGame(context),
   },
 ];

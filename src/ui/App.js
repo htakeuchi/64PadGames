@@ -10,6 +10,7 @@ import { emptyFrame } from '../pad/PadLights.js';
 import { VirtualPadAdapter } from '../pad/VirtualPadAdapter.js';
 
 const DIFFICULTIES = ['easy', 'normal', 'hard'];
+const BOARD_SIZES = [2, 3, 4, 5, 6, 7, 8];
 const LONG_PRESS_MS = 500;
 
 export function createApp(root) {
@@ -29,6 +30,7 @@ class PadGameApp {
     this.humanPlayer = BLACK;
     this.difficulty = 'normal';
     this.moveLimitEnabled = true;
+    this.boardSize = 5;
     this.muted = false;
     this.padPresses = new Map();
     this.currentGameState = null;
@@ -130,6 +132,18 @@ class PadGameApp {
               </div>
             </section>
 
+            <section class="control-section" data-board-size-controls>
+              <h2>Board</h2>
+              <label class="field">
+                <span>Size</span>
+                <select data-control="board-size">
+                  ${BOARD_SIZES.map((size) => (
+                    `<option value="${size}" ${size === 5 ? 'selected' : ''}>${size}x${size}</option>`
+                  )).join('')}
+                </select>
+              </label>
+            </section>
+
             <section class="score-panel">
               <div>
                 <span data-human-label>You</span>
@@ -206,8 +220,10 @@ class PadGameApp {
     this.undoButton = this.root.querySelector('[data-action="undo"]');
     this.muteButton = this.root.querySelector('[data-action="mute"]');
     this.difficultySelect = this.root.querySelector('[data-control="difficulty"]');
+    this.boardSizeSelect = this.root.querySelector('[data-control="board-size"]');
     this.reversiControls = this.root.querySelector('[data-reversi-controls]');
     this.floodItControls = this.root.querySelector('[data-floodit-controls]');
+    this.boardSizeControls = this.root.querySelector('[data-board-size-controls]');
   }
 
   renderGameList() {
@@ -252,6 +268,10 @@ class PadGameApp {
     this.root.addEventListener('change', (event) => {
       if (event.target.matches('[data-control="difficulty"]')) {
         this.setDifficulty(event.target.value);
+      }
+
+      if (event.target.matches('[data-control="board-size"]')) {
+        this.setBoardSize(Number(event.target.value));
       }
     });
 
@@ -461,6 +481,7 @@ class PadGameApp {
       humanPlayer: this.humanPlayer,
       difficulty: this.difficulty,
       moveLimitEnabled: this.moveLimitEnabled,
+      boardSize: this.boardSize,
       animations: this.animations,
     });
     this.syncGameControls();
@@ -497,6 +518,13 @@ class PadGameApp {
     this.game?.setMoveLimitEnabled?.(enabled);
   }
 
+  setBoardSize(size) {
+    this.exitDebugColorMode();
+    this.boardSize = normalizeBoardSize(size);
+    this.boardSizeSelect.value = String(this.boardSize);
+    this.game?.setBoardSize?.(this.boardSize);
+  }
+
   handlePadControl(control) {
     if (this.debugColorMode) {
       this.exitDebugColorMode();
@@ -517,6 +545,14 @@ class PadGameApp {
 
     if (this.selectedGameId === 'floodit' && control === PAD_CONTROL.ARROW_RIGHT) {
       this.setMoveLimitEnabled(false);
+    }
+
+    if (this.selectedGameId === 'lightsout' && control === PAD_CONTROL.ARROW_LEFT) {
+      this.stepBoardSize(-1);
+    }
+
+    if (this.selectedGameId === 'lightsout' && control === PAD_CONTROL.ARROW_RIGHT) {
+      this.stepBoardSize(1);
     }
 
     if (control === PAD_CONTROL.ARROW_UP) {
@@ -548,6 +584,16 @@ class PadGameApp {
     );
 
     this.setDifficulty(DIFFICULTIES[nextIndex]);
+  }
+
+  stepBoardSize(direction) {
+    const currentIndex = BOARD_SIZES.indexOf(this.boardSize);
+    const nextIndex = Math.max(
+      0,
+      Math.min(BOARD_SIZES.length - 1, currentIndex + direction),
+    );
+
+    this.setBoardSize(BOARD_SIZES[nextIndex]);
   }
 
   async connectLaunchpad() {
@@ -641,6 +687,11 @@ class PadGameApp {
 
     if (state.kind === 'hasami') {
       this.syncHasamiState(state);
+      return;
+    }
+
+    if (state.kind === 'lightsout') {
+      this.syncLightsOutState(state);
       return;
     }
 
@@ -756,9 +807,24 @@ class PadGameApp {
     this.undoButton.disabled = !state.canUndo;
   }
 
+  syncLightsOutState(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = 'Moves';
+    this.humanScore.textContent = String(state.movesUsed);
+    this.cpuLabel.textContent = 'Par';
+    this.cpuScore.textContent = String(state.parMoves);
+    this.messageLine.textContent = state.bestMoves === null
+      ? `Lights ${state.lightsOnCount} / Best - / Difficulty ${formatDifficulty(state.difficulty)}`
+      : `Lights ${state.lightsOnCount} / Best ${state.bestMoves} / Difficulty ${formatDifficulty(state.difficulty)}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = !state.canUndo;
+  }
+
   syncGameControls() {
     this.reversiControls.hidden = !hasPlayerChoice(this.selectedGameId);
     this.floodItControls.hidden = this.selectedGameId !== 'floodit';
+    this.boardSizeControls.hidden = this.selectedGameId !== 'lightsout';
   }
 
   setDeviceStatus(message, connected = false, error = false) {
@@ -775,6 +841,14 @@ function padKey({ x, y }) {
 
 function hasPlayerChoice(gameId) {
   return gameId === 'reversi' || gameId === 'checkers' || gameId === 'hasami';
+}
+
+function normalizeBoardSize(size) {
+  return BOARD_SIZES.includes(size) ? size : 5;
+}
+
+function formatDifficulty(difficulty) {
+  return `${difficulty.slice(0, 1).toUpperCase()}${difficulty.slice(1)}`;
 }
 
 function formatDebugColor(color) {
