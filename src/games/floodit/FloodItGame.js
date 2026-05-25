@@ -93,6 +93,18 @@ export class FloodItGame {
     this.render();
   }
 
+  async playDebugColors() {
+    this.animationId += 1;
+    this.animations?.cancel();
+    this.audio.pass();
+    await this.animations?.playColorList(this.getDebugColors());
+    this.render();
+  }
+
+  getDebugColors() {
+    return FLOOD_LIGHTS;
+  }
+
   handlePadTap({ x, y }) {
     if (this.gameOver) {
       if (this.awaitingNewGame) {

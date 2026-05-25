@@ -150,6 +150,18 @@ export class PadAnimationPlayer {
     return true;
   }
 
+  async playColorList(lights, duration = 2400) {
+    const runId = this.nextRun();
+    const palette = lights.length > 0 ? lights : [PAD_LIGHT.off];
+    const frame = emptyFrame();
+
+    palette.slice(0, PAD_SIZE).forEach((light, x) => {
+      frame[cellIndex(x, 0)] = light;
+    });
+
+    return this.showFrame(frame, duration, runId);
+  }
+
   nextRun() {
     this.runId += 1;
     return this.runId;

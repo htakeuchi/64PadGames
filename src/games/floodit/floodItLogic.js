@@ -17,10 +17,10 @@ export const FLOOD_DIFFICULTY = {
 
 export const FLOOD_LIGHTS = [
   {
-    id: 'flood-blue',
-    midi: 45,
-    css: '#0072b2',
-    label: 'Blue',
+    id: 'flood-sky',
+    midi: 37,
+    css: '#56b4e9',
+    label: 'Sky',
   },
   {
     id: 'flood-amber',
@@ -31,26 +31,26 @@ export const FLOOD_LIGHTS = [
   {
     id: 'flood-green',
     midi: 21,
-    css: '#009e73',
+    css: '#007a5e',
     label: 'Green',
-  },
-  {
-    id: 'flood-magenta',
-    midi: 53,
-    css: '#cc79a7',
-    label: 'Magenta',
-  },
-  {
-    id: 'flood-cyan',
-    midi: 37,
-    css: '#56b4e9',
-    label: 'Cyan',
   },
   {
     id: 'flood-white',
     midi: 3,
     css: '#f0f0f0',
     label: 'White',
+  },
+  {
+    id: 'flood-violet',
+    midi: 49,
+    css: '#7b61ff',
+    label: 'Violet',
+  },
+  {
+    id: 'flood-vermilion',
+    midi: 5,
+    css: '#d55e00',
+    label: 'Vermilion',
   },
 ];
 
@@ -129,4 +129,3 @@ function neighborsOf(index) {
 
   return neighbors;
 }
-

@@ -168,6 +168,25 @@ export class MinesweeperGame {
     this.render();
   }
 
+  async playDebugColors() {
+    this.blinkId += 1;
+    this.animations?.cancel();
+    this.audio.pass();
+    await this.animations?.playColorList(this.getDebugColors());
+    this.render();
+  }
+
+  getDebugColors() {
+    return [
+      PAD_LIGHT.dim,
+      PAD_LIGHT.flag,
+      PAD_LIGHT.mine,
+      PAD_LIGHT.player,
+      PAD_LIGHT.opponent,
+      PAD_LIGHT.warning,
+    ];
+  }
+
   getState() {
     const openedCount = countOpenedSafeCells(this.cells);
     const flagCount = countFlags(this.cells);

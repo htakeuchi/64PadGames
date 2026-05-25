@@ -45,7 +45,7 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Win by capturing all 64 tiles. When Move Limit is Limited, clear the board before the limit.
 - Difficulty sets colors and the Limited move target: Easy 4 colors / 22 moves, Normal 5 / 18, Hard 6 / 15.
 - Move Limit can be switched between Limited and Unlimited.
-- The palette uses high-contrast, colorblind-aware colors: blue, amber, green, magenta, cyan, and white.
+- The palette uses high-contrast colors tuned for Pad visibility: sky, amber, green, white, violet, and vermilion.
 - Cursor Up / Down changes difficulty. Cursor Left / Right switches Move Limit.
 - Record Arm starts a new Flood-It board.
 
@@ -60,6 +60,23 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Difficulty changes target rounds, playback speed, input timeout, and lives.
 - Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in Simon.
 - Record Arm resets Simon to the waiting state.
+
+## SameGame
+
+- Grid tap: remove a connected same-color group of two or more blocks.
+- Single blocks and empty spaces are invalid.
+- Removed blocks fall downward, and empty columns shift left.
+- Difficulty sets colors and clustering: Easy 4 colors, Normal 5, Hard 6.
+- The palette uses high-contrast colors tuned for Pad visibility: sky, amber, green, white, violet, and vermilion.
+- Score is `(removed blocks - 2)^2`, with a 100 point clear bonus.
+- Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in SameGame.
+- Record Arm starts a new SameGame board.
+
+## Debug Colors
+
+- Colors shows the selected game's palette on the top row.
+- Tap a lit color pad to show its label and value on screen.
+- Tap any unlit pad to return to the game.
 
 ## End Animations
 
@@ -89,5 +106,6 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/games/minesweeper/` contains Minesweeper rules and pad feedback.
 - `src/games/floodit/` contains Flood-It rules and pad feedback.
 - `src/games/simon/` contains Simon rules and four-block pad feedback.
+- `src/games/samegame/` contains SameGame rules and pad feedback.
 
 The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.

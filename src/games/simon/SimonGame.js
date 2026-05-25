@@ -89,6 +89,23 @@ export class SimonGame {
     this.render();
   }
 
+  async playDebugColors() {
+    this.cancelTimers();
+    this.animations?.cancel();
+    this.audio.pass();
+    await this.animations?.playColorList(this.getDebugColors());
+    this.render();
+  }
+
+  getDebugColors() {
+    return SIMON_BLOCKS.map((block) => ({
+      id: `${block.id}-active`,
+      midi: block.midi,
+      css: block.css,
+      label: block.label,
+    }));
+  }
+
   handlePadTap({ x, y }) {
     if (this.gameOver) {
       if (this.awaitingNewGame) {

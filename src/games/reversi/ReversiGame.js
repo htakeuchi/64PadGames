@@ -169,6 +169,25 @@ export class ReversiGame {
     this.render();
   }
 
+  async playDebugColors() {
+    this.endSequenceId += 1;
+    this.animations?.cancel();
+    this.audio.pass();
+    await this.animations?.playColorList(this.getDebugColors());
+    this.render();
+  }
+
+  getDebugColors() {
+    return [
+      PAD_LIGHT.player,
+      PAD_LIGHT.opponent,
+      PAD_LIGHT.legal,
+      PAD_LIGHT.last,
+      PAD_LIGHT.warning,
+      PAD_LIGHT.dim,
+    ];
+  }
+
   getState() {
     const score = countPieces(this.board);
     const legalMoves = getLegalMoves(this.board, this.currentPlayer);

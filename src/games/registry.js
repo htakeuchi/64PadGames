@@ -1,6 +1,7 @@
 import { FloodItGame } from './floodit/FloodItGame.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
+import { SameGame } from './samegame/SameGame.js';
 import { SimonGame } from './simon/SimonGame.js';
 
 export const gameRegistry = [
@@ -27,5 +28,11 @@ export const gameRegistry = [
     title: 'Simon',
     summary: 'Repeat a growing four-block light and sound pattern.',
     create: (context) => new SimonGame(context),
+  },
+  {
+    id: 'samegame',
+    title: 'SameGame',
+    summary: 'Remove connected color groups and collapse the board.',
+    create: (context) => new SameGame(context),
   },
 ];

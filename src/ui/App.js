@@ -6,6 +6,7 @@ import { LaunchpadProMk3Adapter } from '../pad/LaunchpadProMk3Adapter.js';
 import { PadAnimationPlayer } from '../pad/PadAnimationPlayer.js';
 import { PAD_CONTROL } from '../pad/PadControls.js';
 import { PadHub } from '../pad/PadHub.js';
+import { emptyFrame } from '../pad/PadLights.js';
 import { VirtualPadAdapter } from '../pad/VirtualPadAdapter.js';
 
 const DIFFICULTIES = ['easy', 'normal', 'hard'];
@@ -30,6 +31,8 @@ class PadGameApp {
     this.moveLimitEnabled = true;
     this.muted = false;
     this.padPresses = new Map();
+    this.currentGameState = null;
+    this.debugColorMode = null;
   }
 
   mount() {
@@ -172,6 +175,10 @@ class PadGameApp {
                   <i data-lucide="meh"></i>
                   <span>Draw</span>
                 </button>
+                <button class="button" type="button" data-action="debug-colors">
+                  <i data-lucide="palette"></i>
+                  <span>Colors</span>
+                </button>
               </div>
             </section>
 
@@ -259,14 +266,17 @@ class PadGameApp {
     }
 
     if (action === 'new-game') {
+      this.exitDebugColorMode();
       this.game?.restart();
     }
 
     if (action === 'undo') {
+      this.exitDebugColorMode();
       this.game?.undo?.();
     }
 
     if (action === 'pass') {
+      this.exitDebugColorMode();
       this.game?.pass?.();
     }
 
@@ -285,10 +295,24 @@ class PadGameApp {
     if (action === 'debug-draw') {
       this.playDebugAnimation('draw');
     }
+
+    if (action === 'debug-colors') {
+      this.playDebugColors();
+    }
   }
 
   handlePadDown(cell) {
     const key = padKey(cell);
+    if (this.debugColorMode) {
+      this.padPresses.set(key, {
+        cell,
+        canHold: false,
+        held: false,
+        timer: null,
+      });
+      return;
+    }
+
     const canHold = typeof this.game?.handlePadHold === 'function';
     const press = {
       cell,
@@ -315,8 +339,15 @@ class PadGameApp {
       return;
     }
 
-    window.clearTimeout(press.timer);
+    if (press.timer) {
+      window.clearTimeout(press.timer);
+    }
     this.padPresses.delete(key);
+
+    if (this.debugColorMode) {
+      this.handleDebugColorPad(cell);
+      return;
+    }
 
     if (press.held && press.canHold) {
       return;
@@ -355,6 +386,59 @@ class PadGameApp {
     this.game?.render();
   }
 
+  async playDebugColors() {
+    const colors = typeof this.game?.getDebugColors === 'function'
+      ? this.game.getDebugColors()
+      : [];
+
+    this.debugColorMode = {
+      colors,
+    };
+    this.animations.cancel();
+    this.audio.pass();
+    this.renderDebugColorFrame();
+    this.turnLabel.textContent = 'Color list';
+    this.turnChip.textContent = 'Debug';
+    this.messageLine.textContent = 'Tap a color pad to show its label. Tap any empty pad to return.';
+  }
+
+  handleDebugColorPad({ x, y }) {
+    const color = y === 0 ? this.debugColorMode?.colors[x] : null;
+
+    if (!color) {
+      this.exitDebugColorMode();
+      return;
+    }
+
+    this.turnLabel.textContent = formatDebugColor(color);
+    this.turnChip.textContent = 'Color';
+    this.messageLine.textContent = `Label ${color.label ?? color.id ?? 'Color'} / MIDI ${color.midi ?? '-'}`;
+    this.renderDebugColorFrame();
+  }
+
+  renderDebugColorFrame() {
+    const frame = emptyFrame();
+
+    this.debugColorMode.colors.slice(0, 8).forEach((color, x) => {
+      frame[x] = color;
+    });
+
+    this.padHub.renderFrame(frame);
+  }
+
+  exitDebugColorMode() {
+    if (!this.debugColorMode) {
+      return;
+    }
+
+    this.debugColorMode = null;
+    this.game?.render();
+
+    if (this.currentGameState) {
+      this.syncGameState(this.currentGameState);
+    }
+  }
+
   selectGame(gameId) {
     const gameDefinition = gameRegistry.find((game) => game.id === gameId);
 
@@ -363,6 +447,8 @@ class PadGameApp {
     }
 
     this.selectedGameId = gameId;
+    this.debugColorMode = null;
+    this.currentGameState = null;
     this.renderGameList();
     this.currentGameLabel.textContent = gameDefinition.title;
     this.game = gameDefinition.create({
@@ -392,12 +478,14 @@ class PadGameApp {
   }
 
   setDifficulty(difficulty) {
+    this.exitDebugColorMode();
     this.difficulty = difficulty;
     this.difficultySelect.value = difficulty;
     this.game?.setDifficulty(difficulty);
   }
 
   setMoveLimitEnabled(enabled) {
+    this.exitDebugColorMode();
     this.moveLimitEnabled = enabled;
     this.root.querySelectorAll('[data-move-limit]').forEach((button) => {
       button.classList.toggle(
@@ -409,6 +497,11 @@ class PadGameApp {
   }
 
   handlePadControl(control) {
+    if (this.debugColorMode) {
+      this.exitDebugColorMode();
+      return;
+    }
+
     if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_LEFT) {
       this.setHumanPlayer(BLACK);
     }
@@ -434,7 +527,11 @@ class PadGameApp {
     }
 
     if (control === PAD_CONTROL.RECORD_ARM) {
-      if (this.selectedGameId === 'floodit' || this.selectedGameId === 'simon') {
+      if (
+        this.selectedGameId === 'floodit'
+        || this.selectedGameId === 'simon'
+        || this.selectedGameId === 'samegame'
+      ) {
         this.game?.restart();
       } else {
         this.game?.undo?.();
@@ -510,6 +607,12 @@ class PadGameApp {
   }
 
   syncGameState(state) {
+    this.currentGameState = state;
+
+    if (this.debugColorMode) {
+      return;
+    }
+
     if (state.kind === 'minesweeper') {
       this.syncMinesweeperState(state);
       return;
@@ -522,6 +625,11 @@ class PadGameApp {
 
     if (state.kind === 'simon') {
       this.syncSimonState(state);
+      return;
+    }
+
+    if (state.kind === 'samegame') {
+      this.syncSameGameState(state);
       return;
     }
 
@@ -585,6 +693,18 @@ class PadGameApp {
     this.undoButton.disabled = true;
   }
 
+  syncSameGameState(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = 'Score';
+    this.humanScore.textContent = String(state.score);
+    this.cpuLabel.textContent = 'Blocks';
+    this.cpuScore.textContent = String(state.blocksRemaining);
+    this.messageLine.textContent = `Groups ${state.availableGroupCount} / Colors ${state.colorCount} / Best ${state.bestScore}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = true;
+  }
+
   syncGameControls() {
     this.reversiControls.hidden = this.selectedGameId !== 'reversi';
     this.floodItControls.hidden = this.selectedGameId !== 'floodit';
@@ -600,6 +720,13 @@ class PadGameApp {
 
 function padKey({ x, y }) {
   return `${x},${y}`;
+}
+
+function formatDebugColor(color) {
+  const label = color.label ?? color.id ?? 'Color';
+  const css = typeof color.css === 'string' ? color.css.toUpperCase() : 'NO CSS';
+
+  return `${label} (${css})`;
 }
 
 function isPermissionError(error) {
