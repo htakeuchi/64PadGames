@@ -168,8 +168,8 @@ export class PadAnimationPlayer {
   }
 
   async showFace(result, runId) {
-    const openFace = faceFrame(result, false);
-    const blinkFace = faceFrame(result, true);
+    const openFace = faceFrame(result);
+    const blinkFace = faceFrame(result);
 
     if (!await this.showFrame(openFace, endMs(FACE_HOLD_MS), runId)) return false;
     if (!await this.showFrame(blinkFace, endMs(120), runId)) return false;
@@ -202,57 +202,58 @@ function fillFrame(light) {
   return Array.from({ length: PAD_SIZE * PAD_SIZE }, () => light);
 }
 
-function faceFrame(result, blinking) {
+function faceFrame(result) {
   const frame = emptyFrame();
   const faceLight = result === 'win'
     ? PAD_LIGHT.legal
     : result === 'lose'
       ? PAD_LIGHT.warning
       : PAD_LIGHT.opponent;
+  const patterns = {
+    win: [
+      '........',
+      '........',
+      '..#..#..',
+      '........',
+      '........',
+      '.#....#.',
+      '..####..',
+      '........',
+    ],
+    lose: [
+      '........',
+      '........',
+      '..#..#..',
+      '........',
+      '........',
+      '..####..',
+      '.#....#.',
+      '........',
+    ],
+    draw: [
+      '........',
+      '........',
+      '..#..#..',
+      '........',
+      '........',
+      '.######.',
+      '........',
+      '........',
+    ],
+  };
 
-  drawEye(frame, faceLight, blinking);
-
-  if (result === 'win') {
-    drawCells(frame, faceLight, [
-      [1, 4], [6, 4],
-      [2, 5], [5, 5],
-      [3, 6], [4, 6],
-    ]);
-  }
-
-  if (result === 'lose') {
-    drawCells(frame, faceLight, [
-      [3, 4], [4, 4],
-      [2, 5], [5, 5],
-      [1, 6], [6, 6],
-    ]);
-  }
-
-  if (result === 'draw') {
-    drawCells(frame, faceLight, [
-      [2, 5], [3, 5], [4, 5], [5, 5],
-    ]);
-  }
+  drawPattern(frame, faceLight, patterns[result] ?? patterns.draw);
 
   return frame;
 }
 
-function drawEye(frame, light, blinking) {
-  if (blinking) {
-    drawCells(frame, light, [
-      [2, 2], [5, 2],
-    ]);
-    return;
-  }
-
-  drawCells(frame, light, [
-    [2, 2], [5, 2],
-  ]);
-}
-
-function drawCells(frame, light, cells) {
-  cells.forEach(([x, y]) => {
-    frame[cellIndex(x, y)] = light;
+function drawPattern(frame, light, rows) {
+  rows.forEach((row, y) => {
+    [...row].forEach((cell, x) => {
+      if (cell === '#') {
+        frame[cellIndex(x, y)] = light;
+      }
+    });
   });
 }
 

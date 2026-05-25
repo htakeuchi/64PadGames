@@ -17,6 +17,9 @@ import {
 
 const CPU_THINK_DELAY_MS = 360;
 const END_BOARD_HOLD_MS = 500;
+const SCORE_BLINK_COUNT = 3;
+const SCORE_BLINK_ON_MS = 650;
+const SCORE_BLINK_OFF_MS = 320;
 
 export class ReversiGame {
   constructor({ pad, audio, onChange }) {
@@ -329,6 +332,12 @@ export class ReversiGame {
       return;
     }
 
+    const scoreCompleted = await this.playSortedScoreBlink(sequenceId);
+
+    if (!scoreCompleted || this.endSequenceId !== sequenceId || !this.gameOver) {
+      return;
+    }
+
     let completed = true;
 
     if (winner === EMPTY) {
@@ -347,6 +356,56 @@ export class ReversiGame {
     this.awaitingNewGame = true;
     this.message = `${endMessage} Press any pad for a new game.`;
     this.notify();
+  }
+
+  async playSortedScoreBlink(sequenceId) {
+    const sortedFrame = this.createSortedScoreFrame();
+
+    for (let blink = 0; blink < SCORE_BLINK_COUNT; blink += 1) {
+      this.pad.renderFrame(sortedFrame);
+      await sleep(SCORE_BLINK_ON_MS);
+
+      if (this.endSequenceId !== sequenceId || !this.gameOver) {
+        return false;
+      }
+
+      this.pad.renderFrame(emptyFrame());
+      await sleep(SCORE_BLINK_OFF_MS);
+
+      if (this.endSequenceId !== sequenceId || !this.gameOver) {
+        return false;
+      }
+    }
+
+    this.pad.renderFrame(sortedFrame);
+    await sleep(SCORE_BLINK_ON_MS);
+
+    return this.endSequenceId === sequenceId && this.gameOver;
+  }
+
+  createSortedScoreFrame() {
+    const frame = emptyFrame();
+    const score = countPieces(this.board);
+    const humanCount = this.humanPlayer === BLACK ? score.black : score.white;
+    const cpuCount = this.cpuPlayer === BLACK ? score.black : score.white;
+    const humanSurplusStart = Math.min(humanCount, cpuCount);
+    const cpuSurplusStart = Math.min(cpuCount, humanCount);
+
+    sortedHumanCells().slice(0, humanCount).forEach((index, position) => {
+      frame[index] = {
+        ...PAD_LIGHT.player,
+        effect: position >= humanSurplusStart ? LIGHT_EFFECT.PULSE : LIGHT_EFFECT.STATIC,
+      };
+    });
+
+    sortedCpuCells().slice(0, cpuCount).forEach((index, position) => {
+      frame[index] = {
+        ...PAD_LIGHT.opponent,
+        effect: position >= cpuSurplusStart ? LIGHT_EFFECT.PULSE : LIGHT_EFFECT.STATIC,
+      };
+    });
+
+    return frame;
   }
 
   render() {
@@ -423,6 +482,14 @@ function getEndMessage(winner, humanPlayer, score) {
   }
 
   return `CPU wins. ${score.black}-${score.white}`;
+}
+
+function sortedHumanCells() {
+  return Array.from({ length: 64 }, (_, index) => index);
+}
+
+function sortedCpuCells() {
+  return Array.from({ length: 64 }, (_, index) => 63 - index);
 }
 
 function sleep(ms) {
