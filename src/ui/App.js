@@ -639,10 +639,15 @@ class PadGameApp {
       return;
     }
 
+    if (state.kind === 'hasami') {
+      this.syncHasamiState(state);
+      return;
+    }
+
     const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
-    const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
-    const cpuColor = state.cpuPlayer === BLACK ? 'Black' : 'White';
+    const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
+    const cpuSide = state.cpuPlayer === BLACK ? 'Black' : 'White';
 
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.gameOver
@@ -650,9 +655,9 @@ class PadGameApp {
       : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
     this.humanScore.textContent = String(humanScore);
     this.cpuScore.textContent = String(cpuScore);
-    this.humanLabel.textContent = `You (${humanColor})`;
-    this.cpuLabel.textContent = 'CPU';
-    this.messageLine.textContent = `CPU (${cpuColor}) / Legal moves ${state.legalMoveCount}`;
+    this.humanLabel.textContent = 'You (Blue)';
+    this.cpuLabel.textContent = 'CPU (White)';
+    this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Legal moves ${state.legalMoveCount}`;
     this.passButton.disabled = !state.canPass;
     this.undoButton.disabled = !state.canUndo;
   }
@@ -716,8 +721,8 @@ class PadGameApp {
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
     const humanKings = state.humanPlayer === BLACK ? state.score.blackKings : state.score.whiteKings;
     const cpuKings = state.cpuPlayer === BLACK ? state.score.blackKings : state.score.whiteKings;
-    const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
-    const cpuColor = state.cpuPlayer === BLACK ? 'Black' : 'White';
+    const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
+    const cpuSide = state.cpuPlayer === BLACK ? 'Black' : 'White';
 
     this.turnLabel.textContent = state.message;
     this.turnChip.textContent = state.gameOver
@@ -725,9 +730,28 @@ class PadGameApp {
       : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
     this.humanScore.textContent = String(humanScore);
     this.cpuScore.textContent = String(cpuScore);
-    this.humanLabel.textContent = `You (${humanColor})`;
-    this.cpuLabel.textContent = 'CPU';
-    this.messageLine.textContent = `CPU (${cpuColor}) / Kings ${humanKings}-${cpuKings} / Legal moves ${state.legalMoveCount}`;
+    this.humanLabel.textContent = 'You (Blue)';
+    this.cpuLabel.textContent = 'CPU (Red)';
+    this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Kings ${humanKings}-${cpuKings} / Legal moves ${state.legalMoveCount}`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = !state.canUndo;
+  }
+
+  syncHasamiState(state) {
+    const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
+    const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
+    const humanSide = state.humanPlayer === BLACK ? 'Black' : 'White';
+    const cpuSide = state.cpuPlayer === BLACK ? 'Black' : 'White';
+
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.gameOver
+      ? 'Game over'
+      : `${state.currentPlayerName}${state.thinking ? ' thinking' : ''}`;
+    this.humanScore.textContent = String(humanScore);
+    this.cpuScore.textContent = String(cpuScore);
+    this.humanLabel.textContent = 'You (Blue)';
+    this.cpuLabel.textContent = 'CPU (Red)';
+    this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Captured ${state.lastCaptureCount} / Legal moves ${state.legalMoveCount}`;
     this.passButton.disabled = true;
     this.undoButton.disabled = !state.canUndo;
   }
@@ -750,7 +774,7 @@ function padKey({ x, y }) {
 }
 
 function hasPlayerChoice(gameId) {
-  return gameId === 'reversi' || gameId === 'checkers';
+  return gameId === 'reversi' || gameId === 'checkers' || gameId === 'hasami';
 }
 
 function formatDebugColor(color) {

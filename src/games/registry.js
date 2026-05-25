@@ -1,5 +1,6 @@
 import { CheckersGame } from './checkers/CheckersGame.js';
 import { FloodItGame } from './floodit/FloodItGame.js';
+import { HasamiShogiGame } from './hasami/HasamiShogiGame.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
 import { SameGame } from './samegame/SameGame.js';
@@ -41,5 +42,11 @@ export const gameRegistry = [
     title: 'Checkers',
     summary: 'Select pieces, make jumps, and play CPU checkers with kings.',
     create: (context) => new CheckersGame(context),
+  },
+  {
+    id: 'hasami',
+    title: 'Hasami Shogi',
+    summary: 'Slide pieces in straight lines and capture by sandwiching the CPU.',
+    create: (context) => new HasamiShogiGame(context),
   },
 ];

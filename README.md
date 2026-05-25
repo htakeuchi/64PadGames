@@ -83,6 +83,19 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Cursor Up / Down changes difficulty.
 - Record Arm undoes the previous player turn and CPU response.
 
+## Hasami Shogi
+
+- This is an 8x8 pad adaptation of Hasami Shogi.
+- Grid tap: select one of your pieces, then tap a highlighted destination.
+- Pieces move any number of empty squares horizontally or vertically.
+- After a move, opponent pieces are captured when they are sandwiched between the moved piece and another of your pieces.
+- The player pieces use the same blue as Checkers. CPU pieces use the same red as Checkers.
+- The game ends when one side has one or fewer pieces, or the current player has no legal move.
+- Difficulty changes CPU search depth.
+- Cursor Left / Right switches between First and Second player.
+- Cursor Up / Down changes difficulty.
+- Record Arm undoes the previous player turn and CPU response.
+
 ## Debug Colors
 
 - Colors shows the selected game's palette on the top row.
@@ -119,5 +132,6 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/games/simon/` contains Simon rules and four-block pad feedback.
 - `src/games/samegame/` contains SameGame rules and pad feedback.
 - `src/games/checkers/` contains Checkers rules, CPU search, and pad feedback.
+- `src/games/hasami/` contains Hasami Shogi rules, CPU search, and pad feedback.
 
 The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.
