@@ -169,3 +169,5 @@ The generated `dist/` directory hosts the Web MIDI bridge and mirror UI. It must
 - `src/games/match3/` contains Match 3 rules and pad feedback.
 
 The game layer talks only to `PadHub`, so future hardware adapters such as other Launchpad models or Ableton Push can be added without rewriting games.
+
+For implementation conventions and pitfalls when adding a new game, see [docs/adding-games.md](docs/adding-games.md).

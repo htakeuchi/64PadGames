@@ -148,14 +148,6 @@ class PadGameApp {
           </section>
 
           <aside class="control-panel" aria-label="Game controls">
-            <section class="control-section" data-reversi-controls>
-              <h2>Player</h2>
-              <div class="segmented" data-control="player">
-                <button class="is-active" type="button" data-human-player="black">First</button>
-                <button type="button" data-human-player="white">Second</button>
-              </div>
-            </section>
-
             <section class="control-section">
               <h2>Level</h2>
               <label class="field">
@@ -166,6 +158,14 @@ class PadGameApp {
                   <option value="hard">Hard</option>
                 </select>
               </label>
+            </section>
+
+            <section class="control-section" data-reversi-controls>
+              <h2>Player</h2>
+              <div class="segmented" data-control="player">
+                <button class="is-active" type="button" data-human-player="black">First</button>
+                <button type="button" data-human-player="white">Second</button>
+              </div>
             </section>
 
             <section class="control-section" data-floodit-controls>
@@ -217,6 +217,54 @@ class PadGameApp {
                 <i data-lucide="volume-2"></i>
                 <span>Sound</span>
               </button>
+            </section>
+
+            <section class="hardware-keys" aria-label="Hardware key assignments">
+              <h2>Hardware Keys</h2>
+              <dl class="hardware-key-list">
+                <div data-hardware-key-row="game">
+                  <dt>Game</dt>
+                  <dd>
+                    <span class="hardware-key-value">Cursor Up/Down</span>
+                    <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
+                  </dd>
+                </div>
+                <div data-hardware-key-row="level">
+                  <dt>Level</dt>
+                  <dd>
+                    <span class="hardware-key-value">Patterns &gt;</span>
+                    <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
+                  </dd>
+                </div>
+                <div data-hardware-key-row="option">
+                  <dt data-hardware-option-label>Option</dt>
+                  <dd>
+                    <span class="hardware-key-value" data-hardware-option-value>Steps &gt;</span>
+                    <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
+                  </dd>
+                </div>
+                <div data-hardware-key-row="new">
+                  <dt>New</dt>
+                  <dd>
+                    <span class="hardware-key-value">Play</span>
+                    <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
+                  </dd>
+                </div>
+                <div data-hardware-key-row="undo">
+                  <dt>Undo</dt>
+                  <dd>
+                    <span class="hardware-key-value">Record Arm</span>
+                    <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
+                  </dd>
+                </div>
+                <div data-hardware-key-row="pass">
+                  <dt>Pass</dt>
+                  <dd>
+                    <span class="hardware-key-value">Stop Clip</span>
+                    <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
+                  </dd>
+                </div>
+              </dl>
             </section>
 
             <section class="control-section debug-section" data-debug-section ${this.debugMode ? "" : "hidden"}>
@@ -283,6 +331,18 @@ class PadGameApp {
     this.floodItControls = this.root.querySelector("[data-floodit-controls]");
     this.boardSizeControls = this.root.querySelector(
       "[data-board-size-controls]",
+    );
+    this.hardwareKeyRows = new Map(
+      [...this.root.querySelectorAll("[data-hardware-key-row]")].map((row) => [
+        row.dataset.hardwareKeyRow,
+        row,
+      ]),
+    );
+    this.hardwareOptionLabel = this.root.querySelector(
+      "[data-hardware-option-label]",
+    );
+    this.hardwareOptionValue = this.root.querySelector(
+      "[data-hardware-option-value]",
     );
   }
 
@@ -627,103 +687,79 @@ class PadGameApp {
       return;
     }
 
-    if (
-      hasPlayerChoice(this.selectedGameId) &&
-      control === PAD_CONTROL.ARROW_LEFT
-    ) {
-      this.setHumanPlayer(BLACK);
-    }
-
-    if (
-      hasPlayerChoice(this.selectedGameId) &&
-      control === PAD_CONTROL.ARROW_RIGHT
-    ) {
-      this.setHumanPlayer(WHITE);
-    }
-
-    if (
-      this.selectedGameId === "floodit" &&
-      control === PAD_CONTROL.ARROW_LEFT
-    ) {
-      this.setMoveLimitEnabled(true);
-    }
-
-    if (
-      this.selectedGameId === "floodit" &&
-      control === PAD_CONTROL.ARROW_RIGHT
-    ) {
-      this.setMoveLimitEnabled(false);
-    }
-
-    if (
-      this.selectedGameId === "lightsout" &&
-      control === PAD_CONTROL.ARROW_LEFT
-    ) {
-      this.stepBoardSize(-1);
-    }
-
-    if (
-      this.selectedGameId === "lightsout" &&
-      control === PAD_CONTROL.ARROW_RIGHT
-    ) {
-      this.stepBoardSize(1);
-    }
-
-    if (
-      this.selectedGameId === "blockline" &&
-      control === PAD_CONTROL.ARROW_LEFT
-    ) {
-      this.game?.moveSelected?.("left");
-    }
-
-    if (
-      this.selectedGameId === "blockline" &&
-      control === PAD_CONTROL.ARROW_RIGHT
-    ) {
-      this.game?.moveSelected?.("right");
-    }
-
-    if (control === PAD_CONTROL.ARROW_UP) {
-      this.stepDifficulty(1);
-    }
-
-    if (control === PAD_CONTROL.ARROW_DOWN) {
-      this.stepDifficulty(-1);
-    }
-
-    if (control === PAD_CONTROL.PLAY) {
-      this.game?.restart();
-    }
-
-    if (control === PAD_CONTROL.RECORD_ARM) {
-      if (
-        this.selectedGameId === "floodit" ||
-        this.selectedGameId === "simon" ||
-        this.selectedGameId === "samegame"
-      ) {
+    switch (control) {
+      case PAD_CONTROL.ARROW_UP:
+        this.stepGame(-1);
+        break;
+      case PAD_CONTROL.ARROW_DOWN:
+        this.stepGame(1);
+        break;
+      case PAD_CONTROL.PATTERNS_NEXT:
+        this.stepDifficulty(1);
+        break;
+      case PAD_CONTROL.STEPS_NEXT:
+        this.stepSecondaryOption();
+        break;
+      case PAD_CONTROL.PLAY:
         this.game?.restart();
-      } else {
-        this.game?.undo?.();
-      }
+        break;
+      case PAD_CONTROL.RECORD_ARM:
+        if (this.isHardwareKeyEnabled("undo")) {
+          this.game?.undo?.();
+        } else {
+          this.audio.invalid();
+        }
+        break;
+      case PAD_CONTROL.STOP_CLIP:
+        if (this.isHardwareKeyEnabled("pass")) {
+          this.game?.pass?.();
+        } else {
+          this.audio.invalid();
+        }
+        break;
+      default:
+        break;
     }
+  }
+
+  stepGame(direction) {
+    const currentIndex = gameRegistry.findIndex(
+      (game) => game.id === this.selectedGameId,
+    );
+    const nextIndex = wrapIndex(currentIndex + direction, gameRegistry.length);
+
+    this.selectGame(gameRegistry[nextIndex].id);
   }
 
   stepDifficulty(direction) {
     const currentIndex = DIFFICULTIES.indexOf(this.difficulty);
-    const nextIndex = Math.max(
-      0,
-      Math.min(DIFFICULTIES.length - 1, currentIndex + direction),
-    );
+    const nextIndex = wrapIndex(currentIndex + direction, DIFFICULTIES.length);
 
     this.setDifficulty(DIFFICULTIES[nextIndex]);
   }
 
+  stepSecondaryOption() {
+    if (hasPlayerChoice(this.selectedGameId)) {
+      this.setHumanPlayer(this.humanPlayer === BLACK ? WHITE : BLACK);
+      return;
+    }
+
+    if (this.selectedGameId === "floodit") {
+      this.setMoveLimitEnabled(!this.moveLimitEnabled);
+      return;
+    }
+
+    if (this.selectedGameId === "lightsout") {
+      this.stepBoardSize(1);
+      return;
+    }
+
+    this.audio.invalid();
+  }
+
   stepBoardSize(direction) {
     const currentIndex = BOARD_SIZES.indexOf(this.boardSize);
-    const nextIndex = Math.max(
-      0,
-      Math.min(BOARD_SIZES.length - 1, currentIndex + direction),
-    );
+    const nextIndex = wrapIndex(currentIndex + direction, BOARD_SIZES.length);
 
     this.setBoardSize(BOARD_SIZES[nextIndex]);
   }
@@ -854,8 +890,7 @@ class PadGameApp {
     this.humanLabel.textContent = "You (Blue)";
     this.cpuLabel.textContent = "CPU (White)";
     this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Legal moves ${state.legalMoveCount}`;
-    this.passButton.disabled = !state.canPass;
-    this.undoButton.disabled = !state.canUndo;
+    this.syncActionAvailability(state);
   }
 
   syncMinesweeperState(state) {
@@ -866,8 +901,7 @@ class PadGameApp {
     this.cpuLabel.textContent = "Flags";
     this.cpuScore.textContent = String(state.flagCount);
     this.messageLine.textContent = `Mines ${state.mineCount} / Hidden ${state.hiddenCount}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = true;
+    this.syncActionAvailability(state);
   }
 
   syncFloodItState(state) {
@@ -882,8 +916,7 @@ class PadGameApp {
     this.messageLine.textContent = state.moveLimitEnabled
       ? `Colors ${state.colorCount} / Remaining ${state.remainingMoves}`
       : `Colors ${state.colorCount} / Unlimited moves`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = true;
+    this.syncActionAvailability(state);
   }
 
   syncSimonState(state) {
@@ -897,8 +930,7 @@ class PadGameApp {
       state.phase === "input"
         ? `Step ${state.inputIndex + 1}/${state.round} / Best ${state.bestRound}`
         : `Target ${state.targetRounds} / Best ${state.bestRound}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = true;
+    this.syncActionAvailability(state);
   }
 
   syncSameGameState(state) {
@@ -909,8 +941,7 @@ class PadGameApp {
     this.cpuLabel.textContent = "Blocks";
     this.cpuScore.textContent = String(state.blocksRemaining);
     this.messageLine.textContent = `Groups ${state.availableGroupCount} / Colors ${state.colorCount} / Best ${state.bestScore}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = true;
+    this.syncActionAvailability(state);
   }
 
   syncCheckersState(state) {
@@ -938,8 +969,7 @@ class PadGameApp {
     this.humanLabel.textContent = "You (Blue)";
     this.cpuLabel.textContent = "CPU (Red)";
     this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Kings ${humanKings}-${cpuKings} / Legal moves ${state.legalMoveCount}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = !state.canUndo;
+    this.syncActionAvailability(state);
   }
 
   syncHasamiState(state) {
@@ -959,8 +989,7 @@ class PadGameApp {
     this.humanLabel.textContent = "You (Blue)";
     this.cpuLabel.textContent = "CPU (Red)";
     this.messageLine.textContent = `Sides You ${humanSide} / CPU ${cpuSide} / Captured ${state.lastCaptureCount} / Legal moves ${state.legalMoveCount}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = !state.canUndo;
+    this.syncActionAvailability(state);
   }
 
   syncLightsOutState(state) {
@@ -974,8 +1003,7 @@ class PadGameApp {
       state.bestMoves === null
         ? `Lights ${state.lightsOnCount} / Best - / Difficulty ${formatDifficulty(state.difficulty)}`
         : `Lights ${state.lightsOnCount} / Best ${state.bestMoves} / Difficulty ${formatDifficulty(state.difficulty)}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = !state.canUndo;
+    this.syncActionAvailability(state);
   }
 
   syncMatch3State(state) {
@@ -986,8 +1014,7 @@ class PadGameApp {
     this.cpuLabel.textContent = "Moves";
     this.cpuScore.textContent = `${state.movesUsed}/${state.moveLimit}`;
     this.messageLine.textContent = `Remaining ${state.targetRemaining} / Moves left ${state.movesRemaining} / Chain ${state.lastChainCount}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = !state.canUndo;
+    this.syncActionAvailability(state);
   }
 
   syncBlockLineState(state) {
@@ -1001,14 +1028,56 @@ class PadGameApp {
       state.selectedWidth === null
         ? `Moves ${state.movesUsed} / Legal ${state.legalMoveCount} / Blocks ${state.blockCount}`
         : `Selected width ${state.selectedWidth} / Legal ${state.legalMoveCount} / Chain ${state.lastChainCount}`;
-    this.passButton.disabled = true;
-    this.undoButton.disabled = !state.canUndo;
+    this.syncActionAvailability(state);
+  }
+
+  syncActionAvailability(state) {
+    const canUndo = Boolean(state.canUndo);
+    const canPass = Boolean(state.canPass);
+
+    this.passButton.disabled = !canPass;
+    this.undoButton.disabled = !canUndo;
+    this.setHardwareKeyEnabled("undo", canUndo);
+    this.setHardwareKeyEnabled("pass", canPass);
   }
 
   syncGameControls() {
     this.reversiControls.hidden = !hasPlayerChoice(this.selectedGameId);
     this.floodItControls.hidden = this.selectedGameId !== "floodit";
     this.boardSizeControls.hidden = this.selectedGameId !== "lightsout";
+
+    const secondaryOption = getSecondaryOptionLabel(this.selectedGameId);
+
+    this.hardwareOptionLabel.textContent = secondaryOption ?? "Option";
+    this.hardwareOptionValue.textContent = "Steps >";
+    this.setHardwareKeyEnabled("game", true);
+    this.setHardwareKeyEnabled("level", true);
+    this.setHardwareKeyEnabled("option", secondaryOption !== null);
+    this.setHardwareKeyEnabled("new", true);
+
+    if (this.currentGameState) {
+      this.syncActionAvailability(this.currentGameState);
+    }
+  }
+
+  setHardwareKeyEnabled(key, enabled) {
+    const row = this.hardwareKeyRows.get(key);
+
+    if (!row) {
+      return;
+    }
+
+    row.classList.toggle("is-disabled", !enabled);
+    row.setAttribute("aria-disabled", String(!enabled));
+    row.querySelectorAll("[data-hardware-key-state]").forEach((state) => {
+      state.hidden = enabled;
+    });
+  }
+
+  isHardwareKeyEnabled(key) {
+    const row = this.hardwareKeyRows.get(key);
+
+    return Boolean(row && !row.classList.contains("is-disabled"));
   }
 
   setDeviceStatus(message, connected = false, error = false) {
@@ -1025,6 +1094,26 @@ function padKey({ x, y }) {
 
 function hasPlayerChoice(gameId) {
   return gameId === "reversi" || gameId === "checkers" || gameId === "hasami";
+}
+
+function getSecondaryOptionLabel(gameId) {
+  if (hasPlayerChoice(gameId)) {
+    return "Player";
+  }
+
+  if (gameId === "floodit") {
+    return "Moves";
+  }
+
+  if (gameId === "lightsout") {
+    return "Board";
+  }
+
+  return null;
+}
+
+function wrapIndex(index, length) {
+  return ((index % length) + length) % length;
 }
 
 function normalizeBoardSize(size) {
