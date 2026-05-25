@@ -133,6 +133,17 @@ class PadGameApp {
             <div class="pad-stage">
               <div data-pad-root></div>
             </div>
+            <section class="game-info" aria-label="Selected game details">
+              <div class="game-info__summary">
+                <p class="section-label">Game</p>
+                <h2 data-game-info-title>Reversi</h2>
+                <p data-game-info-summary>Play against the CPU on an 8x8 board mirrored to the Launchpad.</p>
+              </div>
+              <div class="game-info__rules">
+                <h3>Rules</h3>
+                <ul data-game-info-rules></ul>
+              </div>
+            </section>
           </section>
 
           <aside class="control-panel" aria-label="Game controls">
@@ -243,6 +254,9 @@ class PadGameApp {
     this.turnLabel = this.root.querySelector('[data-turn-label]');
     this.turnChip = this.root.querySelector('[data-turn-chip]');
     this.currentGameLabel = this.root.querySelector('[data-current-game-label]');
+    this.gameInfoTitle = this.root.querySelector('[data-game-info-title]');
+    this.gameInfoSummary = this.root.querySelector('[data-game-info-summary]');
+    this.gameInfoRules = this.root.querySelector('[data-game-info-rules]');
     this.humanScore = this.root.querySelector('[data-human-score]');
     this.cpuScore = this.root.querySelector('[data-cpu-score]');
     this.humanLabel = this.root.querySelector('[data-human-label]');
@@ -503,6 +517,7 @@ class PadGameApp {
     this.currentGameState = null;
     this.renderGameList();
     this.currentGameLabel.textContent = gameDefinition.title;
+    this.updateGameInfo(gameDefinition);
     this.game?.destroy?.();
     this.game = gameDefinition.create({
       pad: this.padHub,
@@ -517,6 +532,19 @@ class PadGameApp {
       animations: this.animations,
     });
     this.syncGameControls();
+  }
+
+  updateGameInfo(gameDefinition) {
+    this.gameInfoTitle.textContent = gameDefinition.title;
+    this.gameInfoSummary.textContent = gameDefinition.summary;
+    this.gameInfoRules.replaceChildren(
+      ...(gameDefinition.rules ?? []).map((rule) => {
+        const item = document.createElement('li');
+
+        item.textContent = rule;
+        return item;
+      }),
+    );
   }
 
   setHumanPlayer(player) {

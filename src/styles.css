@@ -215,6 +215,60 @@ h2 {
   padding: 18px;
 }
 
+.game-info {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  border-top: 1px solid var(--line);
+  background: rgba(17, 19, 22, 0.62);
+}
+
+.game-info__summary {
+  display: grid;
+  gap: 6px;
+}
+
+.game-info__summary h2 {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.game-info__summary p,
+.game-info__rules li {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.game-info__summary p {
+  margin: 0;
+}
+
+.game-info__rules {
+  display: grid;
+  gap: 8px;
+}
+
+.game-info__rules h3 {
+  margin: 0;
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.game-info__rules ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.game-info__rules li::marker {
+  color: var(--green);
+}
+
 .virtual-pad {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
