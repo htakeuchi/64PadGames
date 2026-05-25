@@ -1,14 +1,16 @@
-# Launchpad Gamepad
+# Launchpad Pro MK3 Games
 
-Static browser games for 8x8 pad controllers, starting with Launchpad Pro MK3.
+Games designed to be played on the physical Novation Launchpad Pro MK3.
+
+The browser page is a Web MIDI host and visual mirror for the hardware. Game input, lights, and feedback are centered on the Launchpad Pro MK3 8x8 pad surface; the on-screen pad exists to reflect the device state and support development. Only Launchpad Pro MK3 is supported at this time.
 
 ## Requirements
 
+- Launchpad Pro MK3 connected over USB.
 - Chrome, Edge, or another Chromium-based browser with Web MIDI support.
 - HTTPS hosting for deployment. `localhost` is acceptable for development.
-- Launchpad Pro MK3 connected over USB.
 
-For hardware testing, open the app directly in Chrome or Edge. Embedded browsers may not expose Web MIDI device permissions.
+Open the page directly in Chrome or Edge, then connect the Launchpad Pro MK3 from the app. Embedded browsers may not expose Web MIDI device permissions.
 
 ## Development
 
@@ -17,9 +19,11 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The app always includes a virtual 8x8 pad, so games can be tested without hardware.
+Open the local URL printed by Vite and connect a Launchpad Pro MK3. The page includes a virtual 8x8 mirror so the hardware state can be inspected during development.
 
 When connecting hardware, allow both MIDI and SysEx access in the browser prompt. If SysEx is denied but MIDI is allowed, the app can still connect, but you must switch the Launchpad to Programmer Mode manually.
+
+Unless otherwise noted, "grid pad" in the game rules means a physical pad on the Launchpad Pro MK3 8x8 grid. The browser grid mirrors the same state.
 
 ## Reversi
 
@@ -146,13 +150,13 @@ After the result animation finishes, the final board returns and any grid pad st
 npm run build
 ```
 
-The generated `dist/` directory is a static site and can be hosted on any HTTPS-capable static host.
+The generated `dist/` directory hosts the Web MIDI bridge and mirror UI. It must be served from an HTTPS-capable static host so the browser can request MIDI access for the Launchpad Pro MK3.
 
 ## Architecture
 
 - `src/pad/` contains the controller abstraction and concrete adapters.
 - `src/pad/LaunchpadProMk3Adapter.js` handles Web MIDI, Programmer Mode, pad note mapping, and LED updates.
-- `src/pad/VirtualPadAdapter.js` mirrors the same API for browser-only testing.
+- `src/pad/VirtualPadAdapter.js` mirrors the hardware API in the browser view.
 - `src/games/registry.js` is the game lineup entry point.
 - `src/games/reversi/` contains Reversi rules, CPU search, and game orchestration.
 - `src/games/minesweeper/` contains Minesweeper rules and pad feedback.
@@ -164,4 +168,4 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/games/lightsout/` contains Lights Out puzzle generation and pad feedback.
 - `src/games/match3/` contains Match 3 rules and pad feedback.
 
-The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.
+The game layer talks only to `PadHub`, so future hardware adapters such as other Launchpad models or Ableton Push can be added without rewriting games.
