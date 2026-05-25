@@ -1,3 +1,4 @@
+import { FloodItGame } from './floodit/FloodItGame.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
 
@@ -13,5 +14,11 @@ export const gameRegistry = [
     title: 'Minesweeper',
     summary: 'Tap to open, hold to flag, and read numbers as pad blinks.',
     create: (context) => new MinesweeperGame(context),
+  },
+  {
+    id: 'floodit',
+    title: 'Flood-It',
+    summary: 'Flood the full board with accessible colors before moves run out.',
+    create: (context) => new FloodItGame(context),
   },
 ];

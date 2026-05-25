@@ -27,6 +27,7 @@ class PadGameApp {
     this.selectedGameId = gameRegistry[0].id;
     this.humanPlayer = BLACK;
     this.difficulty = 'normal';
+    this.moveLimitEnabled = true;
     this.muted = false;
     this.padPresses = new Map();
   }
@@ -118,6 +119,14 @@ class PadGameApp {
               </label>
             </section>
 
+            <section class="control-section" data-floodit-controls>
+              <h2>Moves</h2>
+              <div class="segmented" data-control="move-limit">
+                <button class="is-active" type="button" data-move-limit="on">Limited</button>
+                <button type="button" data-move-limit="off">Unlimited</button>
+              </div>
+            </section>
+
             <section class="score-panel">
               <div>
                 <span data-human-label>You</span>
@@ -191,6 +200,7 @@ class PadGameApp {
     this.muteButton = this.root.querySelector('[data-action="mute"]');
     this.difficultySelect = this.root.querySelector('[data-control="difficulty"]');
     this.reversiControls = this.root.querySelector('[data-reversi-controls]');
+    this.floodItControls = this.root.querySelector('[data-floodit-controls]');
   }
 
   renderGameList() {
@@ -207,6 +217,7 @@ class PadGameApp {
       const gameButton = event.target.closest('[data-game-id]');
       const actionButton = event.target.closest('[data-action]');
       const playerButton = event.target.closest('[data-human-player]');
+      const moveLimitButton = event.target.closest('[data-move-limit]');
 
       if (gameButton) {
         this.selectGame(gameButton.dataset.gameId);
@@ -215,6 +226,11 @@ class PadGameApp {
 
       if (playerButton) {
         this.setHumanPlayer(playerButton.dataset.humanPlayer === 'black' ? BLACK : WHITE);
+        return;
+      }
+
+      if (moveLimitButton) {
+        this.setMoveLimitEnabled(moveLimitButton.dataset.moveLimit === 'on');
         return;
       }
 
@@ -247,11 +263,11 @@ class PadGameApp {
     }
 
     if (action === 'undo') {
-      this.game?.undo();
+      this.game?.undo?.();
     }
 
     if (action === 'pass') {
-      this.game?.pass();
+      this.game?.pass?.();
     }
 
     if (action === 'mute') {
@@ -343,6 +359,7 @@ class PadGameApp {
     this.game.start({
       humanPlayer: this.humanPlayer,
       difficulty: this.difficulty,
+      moveLimitEnabled: this.moveLimitEnabled,
       animations: this.animations,
     });
     this.syncGameControls();
@@ -366,6 +383,17 @@ class PadGameApp {
     this.game?.setDifficulty(difficulty);
   }
 
+  setMoveLimitEnabled(enabled) {
+    this.moveLimitEnabled = enabled;
+    this.root.querySelectorAll('[data-move-limit]').forEach((button) => {
+      button.classList.toggle(
+        'is-active',
+        (button.dataset.moveLimit === 'on') === enabled,
+      );
+    });
+    this.game?.setMoveLimitEnabled?.(enabled);
+  }
+
   handlePadControl(control) {
     if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_LEFT) {
       this.setHumanPlayer(BLACK);
@@ -373,6 +401,14 @@ class PadGameApp {
 
     if (this.selectedGameId === 'reversi' && control === PAD_CONTROL.ARROW_RIGHT) {
       this.setHumanPlayer(WHITE);
+    }
+
+    if (this.selectedGameId === 'floodit' && control === PAD_CONTROL.ARROW_LEFT) {
+      this.setMoveLimitEnabled(true);
+    }
+
+    if (this.selectedGameId === 'floodit' && control === PAD_CONTROL.ARROW_RIGHT) {
+      this.setMoveLimitEnabled(false);
     }
 
     if (control === PAD_CONTROL.ARROW_UP) {
@@ -384,7 +420,11 @@ class PadGameApp {
     }
 
     if (control === PAD_CONTROL.RECORD_ARM) {
-      this.game?.undo();
+      if (this.selectedGameId === 'floodit') {
+        this.game?.restart();
+      } else {
+        this.game?.undo?.();
+      }
     }
   }
 
@@ -461,6 +501,11 @@ class PadGameApp {
       return;
     }
 
+    if (state.kind === 'floodit') {
+      this.syncFloodItState(state);
+      return;
+    }
+
     const humanScore = state.humanPlayer === BLACK ? state.score.black : state.score.white;
     const cpuScore = state.cpuPlayer === BLACK ? state.score.black : state.score.white;
     const humanColor = state.humanPlayer === BLACK ? 'Black' : 'White';
@@ -491,8 +536,25 @@ class PadGameApp {
     this.undoButton.disabled = true;
   }
 
+  syncFloodItState(state) {
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = 'Captured';
+    this.humanScore.textContent = String(state.capturedCount);
+    this.cpuLabel.textContent = 'Moves';
+    this.cpuScore.textContent = state.moveLimitEnabled
+      ? `${state.movesUsed}/${state.moveLimit}`
+      : String(state.movesUsed);
+    this.messageLine.textContent = state.moveLimitEnabled
+      ? `Colors ${state.colorCount} / Remaining ${state.remainingMoves}`
+      : `Colors ${state.colorCount} / Unlimited moves`;
+    this.passButton.disabled = true;
+    this.undoButton.disabled = true;
+  }
+
   syncGameControls() {
     this.reversiControls.hidden = this.selectedGameId !== 'reversi';
+    this.floodItControls.hidden = this.selectedGameId !== 'floodit';
   }
 
   setDeviceStatus(message, connected = false, error = false) {

@@ -269,6 +269,10 @@ h2 {
   gap: 9px;
 }
 
+.control-section[hidden] {
+  display: none;
+}
+
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;

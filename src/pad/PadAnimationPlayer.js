@@ -133,6 +133,23 @@ export class PadAnimationPlayer {
     return true;
   }
 
+  async playFloodSweep(lights) {
+    const runId = this.nextRun();
+
+    for (let step = 0; step < 12; step += 1) {
+      const frame = emptyFrame();
+
+      forEachCell((x, y) => {
+        const colorIndex = (x + y + step) % lights.length;
+        frame[cellIndex(x, y)] = lights[colorIndex];
+      });
+
+      if (!await this.showFrame(frame, 105, runId)) return false;
+    }
+
+    return true;
+  }
+
   nextRun() {
     this.runId += 1;
     return this.runId;

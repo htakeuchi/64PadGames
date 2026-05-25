@@ -1,6 +1,6 @@
 # Launchpad Gamepad
 
-Static browser games for 8x8 pad controllers, starting with Reversi on Launchpad Pro MK3.
+Static browser games for 8x8 pad controllers, starting with Launchpad Pro MK3.
 
 ## Requirements
 
@@ -17,11 +17,11 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The app always includes a virtual 8x8 pad, so Reversi can be tested without hardware.
+Open the local URL printed by Vite. The app always includes a virtual 8x8 pad, so games can be tested without hardware.
 
 When connecting hardware, allow both MIDI and SysEx access in the browser prompt. If SysEx is denied but MIDI is allowed, the app can still connect, but you must switch the Launchpad to Programmer Mode manually.
 
-## Launchpad Controls
+## Reversi
 
 - Grid pads: place a disc, or start a new game after the end animation finishes.
 - Left / Right cursor: switch between First and Second player.
@@ -38,6 +38,16 @@ When connecting hardware, allow both MIDI and SysEx access in the browser prompt
 - Difficulty sets the mine count: Easy 8, Normal 10, Hard 14.
 - Cursor Up / Down changes difficulty. Cursor Left / Right is not assigned in Minesweeper.
 - Stepping on a mine plays an explosion animation, then any grid pad starts a new game.
+
+## Flood-It
+
+- Grid tap: choose the tapped tile color and flood from the top-left region.
+- Win by capturing all 64 tiles. When Move Limit is Limited, clear the board before the limit.
+- Difficulty sets colors and the Limited move target: Easy 4 colors / 22 moves, Normal 5 / 18, Hard 6 / 15.
+- Move Limit can be switched between Limited and Unlimited.
+- The palette uses high-contrast, colorblind-aware colors: blue, amber, green, magenta, cyan, and white.
+- Cursor Up / Down changes difficulty. Cursor Left / Right switches Move Limit.
+- Record Arm starts a new Flood-It board.
 
 ## End Animations
 
@@ -64,5 +74,7 @@ The generated `dist/` directory is a static site and can be hosted on any HTTPS-
 - `src/pad/VirtualPadAdapter.js` mirrors the same API for browser-only testing.
 - `src/games/registry.js` is the game lineup entry point.
 - `src/games/reversi/` contains Reversi rules, CPU search, and game orchestration.
+- `src/games/minesweeper/` contains Minesweeper rules and pad feedback.
+- `src/games/floodit/` contains Flood-It rules and pad feedback.
 
 The game layer talks only to `PadHub`, so future adapters such as other Launchpad models or Ableton Push can be added without rewriting games.
