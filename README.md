@@ -4,6 +4,8 @@ Games designed to be played on the physical Novation Launchpad Pro MK3.
 
 The browser page is a Web MIDI host and visual mirror for the hardware. Game input, lights, and feedback are centered on the Launchpad Pro MK3 8x8 pad surface; the on-screen pad exists to reflect the device state and support development. Only Launchpad Pro MK3 is supported at this time.
 
+Play the hosted version at https://64padgames.namaraii.com/.
+
 ## Requirements
 
 - Launchpad Pro MK3 connected over USB.

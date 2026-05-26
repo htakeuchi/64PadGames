@@ -11,6 +11,7 @@ import {
   countPieces,
   createInitialBoard,
   findWinner,
+  getDropRow,
   getLegalColumns,
   indexOf,
   isGameOver,
@@ -22,6 +23,7 @@ import {
 const BOARD_PAD_Y = 2;
 const CPU_THINK_DELAY_MS = 360;
 const CPU_MOVE_HOLD_MS = 320;
+const DROP_STEP_MS = 54;
 const END_BOARD_HOLD_MS = 500;
 const CONNECT4_CPU_LIGHT = {
   id: 'connect4-cpu',
@@ -42,6 +44,7 @@ export class Connect4Game {
     this.board = createInitialBoard();
     this.currentPlayer = BLACK;
     this.lastMove = null;
+    this.dropAnimation = null;
     this.history = [];
     this.message = '';
     this.thinking = false;
@@ -66,6 +69,7 @@ export class Connect4Game {
     this.board = createInitialBoard();
     this.currentPlayer = BLACK;
     this.lastMove = null;
+    this.dropAnimation = null;
     this.history = [];
     this.thinking = false;
     this.gameOver = false;
@@ -79,6 +83,7 @@ export class Connect4Game {
   destroy() {
     this.animationId += 1;
     this.cancelCpuTimer();
+    this.dropAnimation = null;
     this.animations?.cancel();
   }
 
@@ -101,7 +106,11 @@ export class Connect4Game {
       return;
     }
 
-    if (this.thinking || this.currentPlayer !== this.humanPlayer) {
+    if (
+      this.thinking
+      || this.dropAnimation
+      || this.currentPlayer !== this.humanPlayer
+    ) {
       this.audio.invalid();
       return;
     }
@@ -126,13 +135,14 @@ export class Connect4Game {
   }
 
   undo() {
-    if (this.history.length === 0 || this.thinking) {
+    if (this.history.length === 0 || this.thinking || this.dropAnimation) {
       this.audio.invalid();
       return;
     }
 
     this.cancelCpuTimer();
     this.animationId += 1;
+    this.dropAnimation = null;
     this.animations?.cancel();
 
     let snapshot = this.history.pop();
@@ -156,6 +166,7 @@ export class Connect4Game {
 
   async playDebugAnimation(result) {
     this.animationId += 1;
+    this.dropAnimation = null;
     this.animations?.cancel();
 
     if (result === 'win') {
@@ -178,6 +189,7 @@ export class Connect4Game {
 
   async playDebugColors() {
     this.animationId += 1;
+    this.dropAnimation = null;
     this.animations?.cancel();
     this.audio.pass();
     await this.animations?.playColorList(this.getDebugColors());
@@ -208,7 +220,10 @@ export class Connect4Game {
       cpuPlayer: this.cpuPlayer,
       difficulty: this.difficulty,
       canPass: false,
-      canUndo: this.history.length > 0 && !this.thinking && !this.gameOver,
+      canUndo: this.history.length > 0
+        && !this.thinking
+        && !this.dropAnimation
+        && !this.gameOver,
       gameOver: this.gameOver,
       legalMoveCount: legalColumns.length,
       message: this.message,
@@ -217,9 +232,21 @@ export class Connect4Game {
     };
   }
 
-  playHumanMove(column) {
+  async playHumanMove(column) {
+    const animationId = ++this.animationId;
+
     this.pushSnapshot(this.humanPlayer);
-    const result = this.applyColumn(column, this.humanPlayer);
+    const result = await this.animateColumnDrop(
+      column,
+      this.humanPlayer,
+      animationId,
+      'Dropping your disc.',
+    );
+
+    if (!result) {
+      return;
+    }
+
     this.currentPlayer = this.cpuPlayer;
     this.message = 'Your move is complete.';
     this.audio.connect4Drop(result.y);
@@ -287,7 +314,17 @@ export class Connect4Game {
 
     this.pushSnapshot(this.cpuPlayer);
     this.thinking = true;
-    const result = this.applyColumn(column, this.cpuPlayer);
+    const result = await this.animateColumnDrop(
+      column,
+      this.cpuPlayer,
+      animationId,
+      'CPU dropped a disc.',
+    );
+
+    if (!result) {
+      return;
+    }
+
     this.message = 'CPU dropped a disc.';
     this.audio.connect4Drop(result.y);
     this.render();
@@ -387,10 +424,12 @@ export class Connect4Game {
         const cell = this.board[boardIndex];
         let light = PAD_LIGHT.dim;
 
-        if (cell === this.humanPlayer) {
-          light = PAD_LIGHT.player;
-        } else if (cell === this.cpuPlayer) {
-          light = CONNECT4_CPU_LIGHT;
+        if (cell !== EMPTY) {
+          light = this.lightForPlayer(cell);
+        }
+
+        if (this.dropAnimation?.column === x && this.dropAnimation?.y === y) {
+          light = this.lightForPlayer(this.dropAnimation.player);
         }
 
         if (
@@ -416,6 +455,40 @@ export class Connect4Game {
     }
 
     this.pad.renderFrame(frame);
+  }
+
+  async animateColumnDrop(column, player, animationId, message) {
+    const landingRow = getDropRow(this.board, column);
+
+    if (landingRow < 0) {
+      return null;
+    }
+
+    this.message = message;
+
+    for (let y = 0; y <= landingRow; y += 1) {
+      if (this.animationId !== animationId || this.gameOver) {
+        return null;
+      }
+
+      this.dropAnimation = { column, y, player };
+      this.render();
+      this.notify();
+      await sleep(DROP_STEP_MS);
+    }
+
+    if (this.animationId !== animationId || this.gameOver) {
+      return null;
+    }
+
+    const result = this.applyColumn(column, player);
+
+    this.dropAnimation = null;
+    return result;
+  }
+
+  lightForPlayer(player) {
+    return player === this.humanPlayer ? PAD_LIGHT.player : CONNECT4_CPU_LIGHT;
   }
 
   flashCell(x, y) {
