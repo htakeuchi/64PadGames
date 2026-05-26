@@ -129,7 +129,7 @@ export class FloodItGame {
     this.board = result.board;
     this.capturedCount = result.capturedCount;
     this.message = `Flooded ${this.capturedCount} tiles.`;
-    this.audio.place(result.newlyCaptured.length);
+    this.audio.floodFill(result.newlyCaptured.length, colorIndex);
     this.render();
     this.notify();
     this.playCaptureWave(result.newlyCaptured, FLOOD_LIGHTS[colorIndex]);

@@ -134,7 +134,7 @@ export class HasamiShogiGame {
     if (selectable) {
       this.selectedIndex = targetIndex;
       this.message = 'Choose a destination.';
-      this.audio.place(0);
+      this.audio.hasamiSelect();
       this.render();
       this.notify();
       return;
@@ -248,7 +248,7 @@ export class HasamiShogiGame {
     this.selectedIndex = null;
     this.currentPlayer = this.cpuPlayer;
     this.message = formatMoveMessage('You', this.lastMove.capturedIndexes.length);
-    this.audio.place(this.lastMove.capturedIndexes.length);
+    this.audio.hasamiMove(this.lastMove.capturedIndexes.length);
     this.render();
     this.notify();
     this.resolveTurn();
@@ -314,7 +314,7 @@ export class HasamiShogiGame {
     this.applyStep(move);
     this.selectedIndex = move.toIndex;
     this.message = formatMoveMessage('CPU', this.lastMove.capturedIndexes.length);
-    this.audio.place(this.lastMove.capturedIndexes.length);
+    this.audio.hasamiMove(this.lastMove.capturedIndexes.length);
     this.render();
     this.notify();
     await sleep(CPU_MOVE_HOLD_MS);

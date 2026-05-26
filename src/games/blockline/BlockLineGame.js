@@ -359,6 +359,7 @@ export class BlockLineGame {
     this.selectedBlockId = blockId;
     this.message = `Width ${block.width} block selected.`;
     this.statusLabel = 'Selected';
+    this.audio.blockLineSelect(block.width);
     this.render();
     this.notify();
   }
@@ -384,7 +385,7 @@ export class BlockLineGame {
     this.animating = true;
     this.statusLabel = 'Move';
     this.message = `Moved width ${block.width} block ${move.direction} ${move.distance}.`;
-    this.audio.place(block.width + move.distance);
+    this.audio.blockLineSlide(block.width, move.distance);
     this.render();
     this.notify();
     await sleep(MOVE_MS);
@@ -410,6 +411,7 @@ export class BlockLineGame {
     this.nextBlockId = raised.nextBlockId;
     this.statusLabel = 'Rise';
     this.message = 'New line rising.';
+    this.audio.blockLineRise();
     this.render(newBlockOverrides(raised.newBlockIds, this.blocks));
     this.notify();
     await sleep(RISE_MS);
@@ -467,7 +469,7 @@ export class BlockLineGame {
       this.message = fullRows.length === 1
         ? `Line clear. +${points}`
         : `${fullRows.length} lines clear. +${points}`;
-      this.audio.place(fullRows.length * BLOCK_LINE_WIDTH);
+      this.audio.blockLineClear(fullRows.length, chainIndex);
       this.render(fullRowOverrides(fullRows));
       this.notify();
       await sleep(CLEAR_FLASH_MS);

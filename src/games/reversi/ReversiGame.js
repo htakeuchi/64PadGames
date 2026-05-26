@@ -226,7 +226,7 @@ export class ReversiGame {
     this.lastMove = { x: move.x, y: move.y, player };
     this.currentPlayer = opponentOf(player);
     this.message = `${playerName(player)} placed a disc.`;
-    this.audio.place(result.flips.length);
+    this.audio.reversiMove(result.flips.length);
     this.render();
     this.notify();
     this.resolveTurn();

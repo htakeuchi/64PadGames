@@ -6,6 +6,7 @@ import { HasamiShogiGame } from './hasami/HasamiShogiGame.js';
 import { LightsOutGame } from './lightsout/LightsOutGame.js';
 import { Match3Game } from './match3/Match3Game.js';
 import { MinesweeperGame } from './minesweeper/MinesweeperGame.js';
+import { PegSolitaireGame } from './pegsolitaire/PegSolitaireGame.js';
 import { ReversiGame } from './reversi/ReversiGame.js';
 import { SameGame } from './samegame/SameGame.js';
 import { SimonGame } from './simon/SimonGame.js';
@@ -109,6 +110,18 @@ export const gameRegistry = [
       'Win when every light on the board is off.',
     ],
     create: (context) => new LightsOutGame(context),
+  },
+  {
+    id: 'pegsolitaire',
+    title: 'Peg Solitaire',
+    summary: 'Clear guaranteed-solvable stages by jumping pegs until one remains.',
+    rules: [
+      'Select a peg, then jump over an adjacent peg into an empty hole.',
+      'The jumped peg is removed. Finish with one peg anywhere on the board.',
+      'Clear each prepared stage to unlock the next, harder stage.',
+    ],
+    usesDifficulty: false,
+    create: (context) => new PegSolitaireGame(context),
   },
   {
     id: 'match3',

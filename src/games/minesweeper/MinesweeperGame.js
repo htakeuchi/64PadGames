@@ -97,7 +97,7 @@ export class MinesweeperGame {
 
     if (currentCell.open) {
       this.message = `Adjacent mines: ${currentCell.adjacent}`;
-      this.audio.place(currentCell.adjacent);
+      this.audio.minesweeperReveal(currentCell.adjacent);
       this.blinkNumber(x, y, currentCell.adjacent);
       this.notify();
       return;
@@ -112,7 +112,7 @@ export class MinesweeperGame {
     this.message = opened.length > 1
       ? `Opened ${opened.length} cells. Adjacent mines: ${currentCell.adjacent}`
       : `Adjacent mines: ${currentCell.adjacent}`;
-    this.audio.place(currentCell.adjacent);
+    this.audio.minesweeperReveal(currentCell.adjacent, opened.length);
     this.render();
     this.notify();
 
@@ -133,7 +133,7 @@ export class MinesweeperGame {
 
     if (cell.open) {
       this.message = `Adjacent mines: ${cell.adjacent}`;
-      this.audio.place(cell.adjacent);
+      this.audio.minesweeperReveal(cell.adjacent);
       this.blinkNumber(x, y, cell.adjacent);
       this.notify();
       return;
@@ -141,7 +141,7 @@ export class MinesweeperGame {
 
     cell.flagged = !cell.flagged;
     this.message = cell.flagged ? 'Flag placed.' : 'Flag cleared.';
-    this.audio.pass();
+    this.audio.minesweeperFlag(cell.flagged);
     this.render();
     this.notify();
   }
@@ -212,7 +212,7 @@ export class MinesweeperGame {
     this.awaitingNewGame = false;
     this.statusLabel = 'Boom';
     this.message = 'Boom.';
-    this.audio.lose();
+    this.audio.minesweeperMine();
     this.render();
     this.notify();
 

@@ -81,7 +81,7 @@ export class Match3Game {
     this.statusLabel = 'Target';
     this.lastChainCount = 0;
     this.message = `Target ${this.targetLabel()}: ${this.targetQuota}.`;
-    this.audio.pass();
+    this.audio.match3Select(this.targetColor);
     this.notify();
     this.playTargetIntro(animationId);
   }
@@ -212,6 +212,7 @@ export class Match3Game {
   selectCell(index) {
     this.selectedIndex = index;
     this.message = `Selected ${formatColorLabel(this.board[index])}.`;
+    this.audio.match3Select(this.board[index]);
     this.render();
     this.notify();
   }
@@ -227,6 +228,7 @@ export class Match3Game {
     this.board = swappedBoard;
     this.statusLabel = 'Swapping';
     this.message = 'Swapping panels.';
+    this.audio.match3Swap();
     this.render();
     this.notify();
     await sleep(SWAP_MS);
@@ -247,7 +249,6 @@ export class Match3Game {
       targetRemaining: this.targetRemaining,
     });
     this.movesUsed += 1;
-    this.audio.place(matches.indexes.length);
     await this.resolveCascades(animationId);
   }
 
@@ -297,6 +298,7 @@ export class Match3Game {
       this.message = targetHits > 0
         ? `Cleared ${targetHits} target panels.`
         : `Chain ${chainCount}.`;
+      this.audio.match3Match(matches.indexes.length, chainCount, targetHits);
       this.notify();
       await this.flashMatches(matches, chainCount, animationId);
 

@@ -219,10 +219,10 @@ export class Connect4Game {
 
   playHumanMove(column) {
     this.pushSnapshot(this.humanPlayer);
-    this.applyColumn(column, this.humanPlayer);
+    const result = this.applyColumn(column, this.humanPlayer);
     this.currentPlayer = this.cpuPlayer;
     this.message = 'Your move is complete.';
-    this.audio.place(0);
+    this.audio.connect4Drop(result.y);
     this.render();
     this.notify();
     this.resolveTurn();
@@ -238,6 +238,8 @@ export class Connect4Game {
       index: result.index,
       player,
     };
+
+    return result;
   }
 
   resolveTurn() {
@@ -285,9 +287,9 @@ export class Connect4Game {
 
     this.pushSnapshot(this.cpuPlayer);
     this.thinking = true;
-    this.applyColumn(column, this.cpuPlayer);
+    const result = this.applyColumn(column, this.cpuPlayer);
     this.message = 'CPU dropped a disc.';
-    this.audio.place(0);
+    this.audio.connect4Drop(result.y);
     this.render();
     this.notify();
 

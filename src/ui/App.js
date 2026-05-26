@@ -148,7 +148,7 @@ class PadGameApp {
           </section>
 
           <aside class="control-panel" aria-label="Game controls">
-            <section class="control-section">
+            <section class="control-section" data-difficulty-controls>
               <h2>Level</h2>
               <label class="field">
                 <span>Difficulty</span>
@@ -186,6 +186,14 @@ class PadGameApp {
                       `<option value="${size}" ${size === 5 ? "selected" : ""}>${size}x${size}</option>`,
                   ).join("")}
                 </select>
+              </label>
+            </section>
+
+            <section class="control-section" data-peg-stage-controls hidden>
+              <h2>Stage</h2>
+              <label class="field">
+                <span>Prepared stage</span>
+                <select data-control="peg-stage"></select>
               </label>
             </section>
 
@@ -292,9 +300,10 @@ class PadGameApp {
             <div class="message-line" data-message-line>Ready</div>
           </aside>
         </main>
-        <footer class="app-footer" aria-label="Hardware support">
+        <footer class="app-footer" aria-label="Footer information">
           <strong>Launchpad Pro MK3 only</strong>
           <span>Play on the hardware; the browser pad mirrors it.</span>
+          <span>Copyright &copy; 2026 TAKEUCHI Hitoshi (hitoshi@namaraii.com)</span>
         </footer>
       </div>
     `;
@@ -319,10 +328,14 @@ class PadGameApp {
     this.cpuLabel = this.cpuScore.previousElementSibling;
     this.messageLine = this.root.querySelector("[data-message-line]");
     this.passButton = this.root.querySelector('[data-action="pass"]');
+    this.passButtonLabel = this.passButton.querySelector("span");
     this.undoButton = this.root.querySelector('[data-action="undo"]');
     this.muteButton = this.root.querySelector('[data-action="mute"]');
     this.difficultySelect = this.root.querySelector(
       '[data-control="difficulty"]',
+    );
+    this.difficultyControls = this.root.querySelector(
+      "[data-difficulty-controls]",
     );
     this.boardSizeSelect = this.root.querySelector(
       '[data-control="board-size"]',
@@ -332,6 +345,10 @@ class PadGameApp {
     this.boardSizeControls = this.root.querySelector(
       "[data-board-size-controls]",
     );
+    this.pegStageControls = this.root.querySelector(
+      "[data-peg-stage-controls]",
+    );
+    this.pegStageSelect = this.root.querySelector('[data-control="peg-stage"]');
     this.hardwareKeyRows = new Map(
       [...this.root.querySelectorAll("[data-hardware-key-row]")].map((row) => [
         row.dataset.hardwareKeyRow,
@@ -344,6 +361,9 @@ class PadGameApp {
     this.hardwareOptionValue = this.root.querySelector(
       "[data-hardware-option-value]",
     );
+    this.hardwarePassLabel = this.hardwareKeyRows
+      .get("pass")
+      ?.querySelector("dt");
   }
 
   renderGameList() {
@@ -398,6 +418,10 @@ class PadGameApp {
 
       if (event.target.matches('[data-control="board-size"]')) {
         this.setBoardSize(Number(event.target.value));
+      }
+
+      if (event.target.matches('[data-control="peg-stage"]')) {
+        this.setPegStage(Number(event.target.value));
       }
     });
 
@@ -656,6 +680,11 @@ class PadGameApp {
   }
 
   setDifficulty(difficulty) {
+    if (!this.selectedGameUsesDifficulty()) {
+      this.audio.invalid();
+      return;
+    }
+
     this.exitDebugColorMode();
     this.difficulty = difficulty;
     this.difficultySelect.value = difficulty;
@@ -681,6 +710,16 @@ class PadGameApp {
     this.game?.setBoardSize?.(this.boardSize);
   }
 
+  setPegStage(stageIndex) {
+    if (this.selectedGameId !== "pegsolitaire") {
+      this.audio.invalid();
+      return;
+    }
+
+    this.exitDebugColorMode();
+    this.game?.setStage?.(stageIndex);
+  }
+
   handlePadControl(control) {
     if (this.debugColorMode) {
       this.exitDebugColorMode();
@@ -695,7 +734,11 @@ class PadGameApp {
         this.stepGame(1);
         break;
       case PAD_CONTROL.PATTERNS_NEXT:
-        this.stepDifficulty(1);
+        if (this.isHardwareKeyEnabled("level")) {
+          this.stepDifficulty(1);
+        } else {
+          this.audio.invalid();
+        }
         break;
       case PAD_CONTROL.STEPS_NEXT:
         this.stepSecondaryOption();
@@ -732,6 +775,11 @@ class PadGameApp {
   }
 
   stepDifficulty(direction) {
+    if (!this.selectedGameUsesDifficulty()) {
+      this.audio.invalid();
+      return;
+    }
+
     const currentIndex = DIFFICULTIES.indexOf(this.difficulty);
     const nextIndex = wrapIndex(currentIndex + direction, DIFFICULTIES.length);
 
@@ -876,6 +924,11 @@ class PadGameApp {
 
     if (state.kind === "blockline") {
       this.syncBlockLineState(state);
+      return;
+    }
+
+    if (state.kind === "pegsolitaire") {
+      this.syncPegSolitaireState(state);
       return;
     }
 
@@ -1056,10 +1109,48 @@ class PadGameApp {
     this.syncActionAvailability(state);
   }
 
+  syncPegSolitaireState(state) {
+    this.syncPegStageSelect(state);
+    this.turnLabel.textContent = state.message;
+    this.turnChip.textContent = state.statusLabel;
+    this.humanLabel.textContent = "Stage";
+    this.humanScore.textContent = `${state.levelIndex + 1}/${state.levelCount}`;
+    this.cpuLabel.textContent = "Pegs";
+    this.cpuScore.textContent = String(state.pegCount);
+    this.messageLine.textContent =
+      `${state.levelName} / Moves ${state.movesUsed} / Remaining ${state.movesRemaining} / Legal ${state.legalMoveCount}`;
+    this.syncActionAvailability(state);
+  }
+
+  syncPegStageSelect(state) {
+    const stages = state.stages ?? [];
+    const signature = stages
+      .map((stage) => `${stage.index}:${stage.name}:${stage.pegCount}`)
+      .join("|");
+
+    if (this.pegStageSelect.dataset.stageSignature !== signature) {
+      this.pegStageSelect.replaceChildren(
+        ...stages.map((stage) => {
+          const option = document.createElement("option");
+
+          option.value = String(stage.index);
+          option.textContent = `${stage.index + 1}. ${stage.name} (${stage.pegCount} pegs)`;
+          return option;
+        }),
+      );
+      this.pegStageSelect.dataset.stageSignature = signature;
+    }
+
+    this.pegStageSelect.value = String(state.levelIndex);
+  }
+
   syncActionAvailability(state) {
     const canUndo = Boolean(state.canUndo);
     const canPass = Boolean(state.canPass);
+    const passLabel = state.passLabel ?? "Pass";
 
+    this.passButtonLabel.textContent = passLabel;
+    this.hardwarePassLabel.textContent = passLabel;
     this.passButton.disabled = !canPass;
     this.undoButton.disabled = !canUndo;
     this.setHardwareKeyEnabled("undo", canUndo);
@@ -1067,16 +1158,20 @@ class PadGameApp {
   }
 
   syncGameControls() {
+    const usesDifficulty = this.selectedGameUsesDifficulty();
+
+    this.difficultyControls.hidden = !usesDifficulty;
     this.reversiControls.hidden = !hasPlayerChoice(this.selectedGameId);
     this.floodItControls.hidden = this.selectedGameId !== "floodit";
     this.boardSizeControls.hidden = this.selectedGameId !== "lightsout";
+    this.pegStageControls.hidden = this.selectedGameId !== "pegsolitaire";
 
     const secondaryOption = getSecondaryOptionLabel(this.selectedGameId);
 
     this.hardwareOptionLabel.textContent = secondaryOption ?? "Option";
     this.hardwareOptionValue.textContent = "Steps >";
     this.setHardwareKeyEnabled("game", true);
-    this.setHardwareKeyEnabled("level", true);
+    this.setHardwareKeyEnabled("level", usesDifficulty);
     this.setHardwareKeyEnabled("option", secondaryOption !== null);
     this.setHardwareKeyEnabled("new", true);
 
@@ -1103,6 +1198,14 @@ class PadGameApp {
     const row = this.hardwareKeyRows.get(key);
 
     return Boolean(row && !row.classList.contains("is-disabled"));
+  }
+
+  selectedGameUsesDifficulty() {
+    const gameDefinition = gameRegistry.find(
+      (game) => game.id === this.selectedGameId,
+    );
+
+    return gameDefinition?.usesDifficulty !== false;
   }
 
   setDeviceStatus(message, connected = false, error = false) {

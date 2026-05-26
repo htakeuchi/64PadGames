@@ -193,7 +193,7 @@ export class LightsOutGame {
     this.movesUsed += 1;
     this.lastAffectedIndexes = getAffectedIndexes(this.boardSize, boardIndex);
     this.message = `${countLightsOn(this.board)} lights remain.`;
-    this.audio.place(this.lastAffectedIndexes.length);
+    this.audio.lightsOutToggle(this.lastAffectedIndexes.length, countLightsOn(this.board));
     this.render();
     this.notify();
     this.scheduleHighlightClear();

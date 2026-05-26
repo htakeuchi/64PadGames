@@ -153,7 +153,7 @@ export class CheckersGame {
     if (selectable) {
       this.selectedIndex = targetIndex;
       this.message = 'Choose a destination.';
-      this.audio.place(0);
+      this.audio.checkersSelect();
       this.render();
       this.notify();
       return;
@@ -277,7 +277,7 @@ export class CheckersGame {
       this.selectedIndex = move.toIndex;
       this.forcedFrom = move.toIndex;
       this.message = 'Continue the jump.';
-      this.audio.place(2);
+      this.audio.checkersMove({ capture: true, promotes: move.promotes });
       this.render();
       this.notify();
       return;
@@ -288,7 +288,7 @@ export class CheckersGame {
     this.turnSnapshotPushed = false;
     this.currentPlayer = this.cpuPlayer;
     this.message = 'Your move is complete.';
-    this.audio.place(move.isCapture ? 2 : 0);
+    this.audio.checkersMove({ capture: move.isCapture, promotes: move.promotes });
     this.render();
     this.notify();
     this.resolveTurn();
@@ -362,7 +362,7 @@ export class CheckersGame {
       this.applyStep(move);
       this.selectedIndex = move.toIndex;
       this.message = move.isCapture ? 'CPU jumps.' : 'CPU moves.';
-      this.audio.place(move.isCapture ? 2 : 0);
+      this.audio.checkersMove({ capture: move.isCapture, promotes: move.promotes });
       this.render();
       this.notify();
       await sleep(stepDelay);

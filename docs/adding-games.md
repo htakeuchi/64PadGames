@@ -114,7 +114,9 @@ Keep right-panel messages short. They need to fit beside the pad at desktop size
 
 ## Right Panel Options
 
-The first right-panel option is always `Level`.
+The first right-panel option is usually `Level`.
+
+If a game intentionally has no difficulty setting, add `usesDifficulty: false` to its registry entry. `syncGameControls()` hides the Level control and disables the hardware `Patterns >` Level key for that game. Do this only when progression is represented another way, such as prepared stages that increase in difficulty.
 
 Only one second option is currently supported by the global hardware scheme. If the game needs one, wire it consistently:
 
@@ -220,15 +222,54 @@ The app already ignores stale `onChange` calls from old game instances, but each
 
 ## Audio
 
-Use `GameAudio` consistently:
+Use `GameAudio` consistently and keep audio tied to the meaning of the move.
 
-- `place()` for successful placement or progress.
+Shared utility sounds are still useful:
+
 - `invalid()` for illegal taps or disabled hardware actions.
 - `undo()` for successful undo.
-- `pass()` for pass-like transitions or non-scoring confirmation.
+- `pass()` for pass-like transitions, mode confirmations, or debug color entry.
 - `win()`, `lose()`, and `draw()` for final outcomes.
+- `place()` is a simple fallback for older or very small interactions. Prefer a named game-specific method for new gameplay feedback.
 
-Avoid long or repeated sounds during rapid animations.
+For new games, add short semantic methods to `GameAudio` instead of building Web Audio directly inside the game class. Name the method after the player-visible event, not the implementation detail:
+
+```js
+this.audio.discDrop(row);
+this.audio.tileReveal(adjacent, openedCount);
+this.audio.groupPop(group.length);
+this.audio.lineClear(rowCount, chainCount);
+```
+
+Good game audio should be:
+
+- **Short**: most move sounds should finish in about 40-250ms. Longer musical gestures are for intros, result sequences, or Simon-style memory play.
+- **Parameterized**: use values the player already understands, such as flipped discs, captured pieces, adjacent mines, chain count, dropped row, selected color, or block width.
+- **Distinct**: selection, movement, capture, clear, danger, and failure should not all sound like the same beep at different pitches.
+- **Low clutter**: for chain reactions or many affected cells, play one shaped sound for the event instead of one sound per cell. Cap repeated ticks so large clears do not become noise.
+- **Pad-first**: the sound should reinforce what the Launchpad lights are doing. If lights sweep, the sound can sweep; if a piece lands, the sound should have a landing accent.
+- **Gentle**: avoid loud noise bursts, long drones, or stacked tones that become harsh on small speakers.
+
+Recommended sound identities:
+
+- Reversi: quiet stone placement plus a small rising flip pattern based on the flip count.
+- Connect 4: a falling disc sweep ending in a short landing click, with drop row affecting the fall.
+- Minesweeper: sonar-like reveal blips, pitch by adjacent mine count, latch sounds for flags, and a short noise burst for mines.
+- Flood-It: soft liquid or ink sweeps, with color and newly captured count shaping the chord.
+- SameGame: block pops and sparkles, larger groups sounding fuller than small groups.
+- Checkers: wooden clicks, sliding moves, sharper capture snaps, and a small crown flourish for kings.
+- Hasami Shogi: dry wooden slide and sandwich-capture clicks, with multiple captures ticking quickly.
+- Lights Out: electronic switch tones that distinguish on/off progress and resolve when clear.
+- Match 3: glassy selection, two-note swaps, bright match chords, and pitch-up cascades.
+- Block Line: heavy block selection, short slide or motor movement, warning rise, and horizontal line-clear sweeps.
+
+Implementation guidelines:
+
+- Put reusable oscillators, sweeps, noise bursts, filters, and envelopes in `GameAudio`; game classes should only call semantic methods.
+- Every new method must respect `muted`, call `resume()`, and return early if the audio context is unavailable. Helper methods such as `playTone()`, `playSweep()`, and `playNoise()` should handle this where possible.
+- Keep gain values conservative and stop every oscillator or buffer source shortly after its envelope finishes.
+- Avoid timers or long async audio flows in game classes. Let the existing visual animation lifecycle own timing, and trigger audio at the state transition.
+- When adding a new sound path, run `npm run build`; for interactions or animations, verify the browser mirror and check the console for Web Audio errors.
 
 ## End States
 

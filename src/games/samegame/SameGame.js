@@ -166,7 +166,7 @@ export class SameGame {
       ? `${colorLabel}. Removed ${group.length} blocks. +${points}`
       : `${colorLabel}. Removed ${group.length} blocks.`;
     this.statusLabel = 'Removing';
-    this.audio.place(group.length);
+    this.audio.sameGamePop(group.length);
     this.notify();
 
     await this.flashGroup(group, SAMEGAME_LIGHTS[colorIndex], animationId);
