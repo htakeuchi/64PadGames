@@ -19,6 +19,7 @@ const STAGE_CLEAR_HOLD_MS = 700;
 const SOLVER_MOVE_HOLD_MS = 420;
 const SOLVER_STEP_HOLD_MS = 130;
 const STUCK_FLASH_MS = 260;
+const STUCK_NOTIFY_HOLD_MS = 620;
 
 const PEG_LIGHT = {
   ...PAD_LIGHT.player,
@@ -57,6 +58,13 @@ const SOLVER_TO_LIGHT = {
 const CLEAR_LIGHT = {
   ...PAD_LIGHT.legal,
   label: 'Clear',
+};
+
+const STUCK_LIGHT = {
+  ...PAD_LIGHT.warning,
+  id: 'peg-stuck',
+  label: 'Stuck',
+  effect: LIGHT_EFFECT.FLASH,
 };
 
 export class PegSolitaireGame {
@@ -467,8 +475,9 @@ export class PegSolitaireGame {
     this.statusLabel = 'Stuck';
     this.message = 'No jumps remain. Undo or press New.';
     this.audio.pegSolitaireStuck?.();
-    this.render();
+    this.renderStuckFrame();
     this.notify();
+    this.restoreAfterStuckNotification();
   }
 
   async advanceAfterClear() {
@@ -572,6 +581,38 @@ export class PegSolitaireGame {
     });
 
     this.pad.renderFrame(frame);
+  }
+
+  renderStuckFrame() {
+    const frame = emptyFrame();
+
+    this.board.forEach((cell, index) => {
+      if (cell === null) {
+        return;
+      }
+
+      const { x, y } = cellAt(index);
+      frame[y * 8 + x] = STUCK_LIGHT;
+    });
+
+    this.pad.renderFrame(frame);
+  }
+
+  async restoreAfterStuckNotification() {
+    const animationId = ++this.animationId;
+
+    await sleep(STUCK_NOTIFY_HOLD_MS);
+
+    if (
+      this.animationId !== animationId
+      || !this.gameOver
+      || this.statusLabel !== 'Stuck'
+    ) {
+      return;
+    }
+
+    this.render();
+    this.notify();
   }
 
   flashCell(x, y) {

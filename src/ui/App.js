@@ -238,7 +238,7 @@ class PadGameApp {
                   </dd>
                 </div>
                 <div data-hardware-key-row="level">
-                  <dt>Level</dt>
+                  <dt data-hardware-level-label>Level</dt>
                   <dd>
                     <span class="hardware-key-value">Patterns &gt;</span>
                     <span class="hardware-key-state" data-hardware-key-state hidden>Disabled</span>
@@ -360,6 +360,9 @@ class PadGameApp {
     );
     this.hardwareOptionValue = this.root.querySelector(
       "[data-hardware-option-value]",
+    );
+    this.hardwareLevelLabel = this.root.querySelector(
+      "[data-hardware-level-label]",
     );
     this.hardwarePassLabel = this.hardwareKeyRows
       .get("pass")
@@ -734,7 +737,9 @@ class PadGameApp {
         this.stepGame(1);
         break;
       case PAD_CONTROL.PATTERNS_NEXT:
-        if (this.isHardwareKeyEnabled("level")) {
+        if (this.selectedGameId === "pegsolitaire") {
+          this.stepPegStage(1);
+        } else if (this.isHardwareKeyEnabled("level")) {
           this.stepDifficulty(1);
         } else {
           this.audio.invalid();
@@ -784,6 +789,27 @@ class PadGameApp {
     const nextIndex = wrapIndex(currentIndex + direction, DIFFICULTIES.length);
 
     this.setDifficulty(DIFFICULTIES[nextIndex]);
+  }
+
+  stepPegStage(direction) {
+    if (this.selectedGameId !== "pegsolitaire") {
+      this.audio.invalid();
+      return;
+    }
+
+    const levelCount = this.currentGameState?.levelCount ?? 0;
+
+    if (levelCount <= 0) {
+      this.audio.invalid();
+      return;
+    }
+
+    const currentIndex = Number.isInteger(this.currentGameState?.levelIndex)
+      ? this.currentGameState.levelIndex
+      : Number(this.pegStageSelect.value);
+    const nextIndex = wrapIndex(currentIndex + direction, levelCount);
+
+    this.setPegStage(nextIndex);
   }
 
   stepSecondaryOption() {
@@ -1159,6 +1185,7 @@ class PadGameApp {
 
   syncGameControls() {
     const usesDifficulty = this.selectedGameUsesDifficulty();
+    const usesPegStages = this.selectedGameId === "pegsolitaire";
 
     this.difficultyControls.hidden = !usesDifficulty;
     this.reversiControls.hidden = !hasPlayerChoice(this.selectedGameId);
@@ -1170,8 +1197,9 @@ class PadGameApp {
 
     this.hardwareOptionLabel.textContent = secondaryOption ?? "Option";
     this.hardwareOptionValue.textContent = "Steps >";
+    this.hardwareLevelLabel.textContent = usesPegStages ? "Stage" : "Level";
     this.setHardwareKeyEnabled("game", true);
-    this.setHardwareKeyEnabled("level", usesDifficulty);
+    this.setHardwareKeyEnabled("level", usesDifficulty || usesPegStages);
     this.setHardwareKeyEnabled("option", secondaryOption !== null);
     this.setHardwareKeyEnabled("new", true);
 
